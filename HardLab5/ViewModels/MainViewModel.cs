@@ -319,14 +319,14 @@ namespace HardLab5
                 vmEditTableData.CurrentColumn = names;
                 vmEditTableData.selectedScheme = selectedScheme;
                 vmEditTableData.selectedTable = selectedTable;
-                //foreach (var keyTable in keyTables)
-                //{
-                //    if (keyTable.Key.Name == tableName)
-                //    {
-                //        vmEditTableData.keyTable = keyTable;
-                //        break;
-                //    }
-                //}
+                foreach (var keyTable in keyTables)
+                {
+                    if (keyTable.Key.Name == tableName)
+                    {
+                        vmEditTableData.keyTable = keyTable;
+                        break;
+                    }
+                }
                 wind.ShowDialog();
             }
             else
