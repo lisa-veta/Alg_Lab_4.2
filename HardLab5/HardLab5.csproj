@@ -84,6 +84,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AlgorithmSort.xaml.cs">
+      <DependentUpon>AlgorithmSort.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="Models\ColumnAdder.cs" />
@@ -94,6 +97,7 @@
     <Compile Include="ViewModels\ViewModelEditTableData.cs" />
     <Compile Include="ViewModels\ViewModelNewDB.cs" />
     <Compile Include="ViewModels\ViewModelNewTable.cs" />
+    <Compile Include="ViewModels\ViewModelSorting.cs" />
     <Compile Include="WindowEditTable.xaml.cs">
       <DependentUpon>WindowEditTable.xaml</DependentUpon>
     </Compile>
@@ -106,6 +110,10 @@
     <Compile Include="WindowDB.xaml.cs">
       <DependentUpon>WindowDB.xaml</DependentUpon>
     </Compile>
+    <Page Include="AlgorithmSort.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

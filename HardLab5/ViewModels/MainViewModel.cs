@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Windows;
@@ -20,6 +21,38 @@ namespace HardLab5
         public static string tableName;
         private TableScheme selectedScheme;
         private Table selectedTable;
+
+        private List<string> _sortingAlgorithms = new List<string> { "прямое слияние", "естественное слияние", "многопутевое слияние"};
+        public List<string> ListOfSorts
+        {
+            get { return _sortingAlgorithms; }
+            set
+            {
+                _sortingAlgorithms = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private List<string> _currentColumn = new List<string> { "колонки" };
+        public List<string> CurrentColumn
+        {
+            get { return _sortingAlgorithms; }
+            set
+            {
+                _sortingAlgorithms = value;
+                OnPropertyChanged();
+            }
+        }
+        private string _currentAlg;
+        public string CurrentSort
+        {
+            get { return _currentAlg; }
+            set
+            {
+                _currentAlg = value;
+                OnPropertyChanged();
+            }
+        }
 
         private DataTable _dataTable;
         public DataTable DataTable
@@ -257,6 +290,33 @@ namespace HardLab5
                 vmEditTableData.DataNewTable = DataTable;
                 vmEditTableData.TableName = tableName;
                 vmEditTableData.folderPath = folderPath;
+                vmEditTableData.selectedScheme = selectedScheme;
+                vmEditTableData.selectedTable = selectedTable;
+                wind.ShowDialog();
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Сначала выберите таблицу");
+            }
+        });
+
+        public ICommand SortTable => new DelegateCommand(param =>
+        {
+            if (DataTable != null)
+            {
+                AlgorithmSort wind = new AlgorithmSort();
+                ViewModelSorting vmEditTableData = new ViewModelSorting();
+                wind.DataContext = vmEditTableData;
+                vmEditTableData.DataGrid = wind.DataGrid;
+                vmEditTableData.DataNewTable = DataTable;
+                vmEditTableData.folderPath = folderPath;
+                List<string> names = new List<string>();
+                foreach (var column in DataTable.Columns)
+                {
+                    names.Add(column.ToString());
+                }
+                names.Add("нет выбора");
+                vmEditTableData.CurrentColumn = names;
                 vmEditTableData.selectedScheme = selectedScheme;
                 vmEditTableData.selectedTable = selectedTable;
                 wind.ShowDialog();
