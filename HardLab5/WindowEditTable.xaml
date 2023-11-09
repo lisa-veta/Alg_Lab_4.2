@@ -1,0 +1,96 @@
+﻿<Window x:Class="HardLab5.WindowEditTable"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HardLab5" xmlns:sys="clr-namespace:System;assembly=mscorlib" d:DataContext="{d:DesignInstance Type=local:ViewModelEditTable}"
+        mc:Ignorable="d"
+        Title="WindowEditTable" Height="700" Width="700">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="160*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="80*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="30*"/>
+            <RowDefinition Height="10*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="10*" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="1" Grid.Row ="1" FontSize="14" Text="Таблица"  TextWrapping="Wrap" VerticalAlignment="Center" TextAlignment="Center" Background="DarkSeaGreen"></TextBlock>
+        <TextBox Grid.Column="2" Grid.Row ="1" Grid.ColumnSpan="2" FontSize="14" Text="{Binding TableName}" TextWrapping="Wrap" VerticalAlignment="Center" TextAlignment="Center" ></TextBox>
+
+        <DataGrid Name="DataGridEditTable"  Grid.Column="1"  Grid.Row="3"  AutoGenerateColumns="True" ItemsSource="{Binding DataNewTable}" 
+                RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="9" CanUserAddRows="False"/>
+
+        <TextBlock Grid.Column="1" Grid.Row ="4"  Grid.ColumnSpan="4" FontSize="17" Text="Редактирование таблицы" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Background="DarkSeaGreen"></TextBlock>
+
+        <TextBlock Grid.Column="1" Grid.Row ="5" Grid.ColumnSpan="2" FontSize="14" Text="Переименовать столбец" TextWrapping="Wrap" VerticalAlignment="Center" TextAlignment="Center"></TextBlock>
+        <ComboBox  Grid.Column="3" Grid.Row ="5" ItemsSource="{Binding ListOfColumns}" SelectedItem ="{Binding SelectedColumn}"></ComboBox>
+        <TextBox Grid.Column="4" Grid.Row ="5" Text="{Binding NewColumnName}" TextWrapping="Wrap"  TextAlignment="Center"></TextBox>
+
+        <TextBlock Grid.Column="1" Grid.Row ="7" Grid.ColumnSpan="2" Text="Добавить столбец" FontSize="14" TextWrapping="Wrap" VerticalAlignment="Center" TextAlignment="Center"></TextBlock>
+        <Button x:Name="Add" Command="{Binding  CreateNewColumn}" Grid.Column="3" Grid.Row="10"  Background="DarkSeaGreen">
+            <Button.Content>
+                <TextBlock FontSize="14" Text="+" TextWrapping="Wrap" TextAlignment="Center"/>
+            </Button.Content>
+        </Button>
+        <Button x:Name="Remove" Command="{Binding  RemoveNewColumn}" Grid.Column="4" Grid.Row="10"  Background="DarkSeaGreen">
+            <Button.Content>
+                <TextBlock FontSize="14" Text="-" TextWrapping="Wrap" TextAlignment="Center"/>
+            </Button.Content>
+        </Button>
+        <ScrollViewer Grid.Row="7"  Grid.Column="3" Grid.ColumnSpan="2" Grid.RowSpan="2">
+            <ItemsControl ItemsSource="{Binding Items}" >
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock></TextBlock>
+                            <TextBlock>Название:</TextBlock>
+                            <TextBox Text="{Binding ColumnName}" Grid.ColumnSpan="2"/>
+                            <TextBlock>Тип:</TextBlock>
+                            <ComboBox  Grid.Column="2" Grid.ColumnSpan="2" SelectedItem ="{Binding Type}">
+                                <sys:String>string</sys:String>
+                                <sys:String>int</sys:String>
+                                <sys:String>uint</sys:String>
+                                <sys:String>double</sys:String>
+                                <sys:String>datetime</sys:String>
+                            </ComboBox>
+                            <TextBlock>Первичный ключ:</TextBlock>
+                            <ComboBox  Grid.Column="2" Grid.ColumnSpan="2" SelectedItem ="{Binding Primary}">
+                                <sys:Boolean>true</sys:Boolean>
+                                <sys:Boolean>false</sys:Boolean>
+                            </ComboBox>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <TextBlock Grid.Column="1" Grid.Row ="12" Grid.ColumnSpan="2" FontSize="14" Text="Удалить столбец" TextWrapping="Wrap" VerticalAlignment="Center" TextAlignment="Center"></TextBlock>
+        <ComboBox  Grid.Column="3" Grid.ColumnSpan="2" Grid.Row ="12" ItemsSource="{Binding ListOfColumns}" SelectedItem ="{Binding SelectedColumnDelete}"></ComboBox>
+
+        <Button x:Name="Edit" Command="{Binding  EditTable}" Grid.Column="2" Grid.Row="14" Grid.ColumnSpan="2" Background="DarkSeaGreen">
+            <Button.Content>
+                <TextBlock FontSize="14" Text="Сохранить изменения" TextWrapping="Wrap" TextAlignment="Center"/>
+            </Button.Content>
+        </Button>
+    </Grid>
+</Window>

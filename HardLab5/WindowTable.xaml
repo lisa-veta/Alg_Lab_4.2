@@ -1,0 +1,66 @@
+﻿<Window x:Class="HardLab5.WindowTable"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HardLab5" xmlns:sys="clr-namespace:System;assembly=mscorlib" d:DataContext="{d:DesignInstance Type=local:ViewModelNewTable}"
+        mc:Ignorable="d"
+        Title="WindowTable" Height="360" Width="330">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="5*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10*"/>
+            <ColumnDefinition Width="10*"/>
+            <ColumnDefinition Width="10*"/>
+            <ColumnDefinition Width="10*"/>
+            <ColumnDefinition Width="10*"/>
+            <ColumnDefinition Width="10*"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Row ="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" >Название таблицы:</TextBlock>
+        <TextBox Text="{Binding  TableName}" x:Name="NameTable" Grid.Row ="1" Grid.Column="3" Grid.ColumnSpan="2" TextWrapping="Wrap"  TextAlignment="Center"></TextBox>
+        <Button x:Name="AddColumns" Command="{Binding  CreateColumns}" Grid.Column="1" Grid.Row="8" Content="Добавить столбец" Grid.ColumnSpan="2"  Background="DarkSeaGreen"/>
+        <Button x:Name="RemoveColumns" Command="{Binding  RemoveColumn}" Grid.Column="3" Grid.Row="8" Content="Удалить столбец" Grid.ColumnSpan="2"  Background="DarkSeaGreen"/>
+        <ScrollViewer Grid.Row="2"  Grid.Column="1" Grid.ColumnSpan="4"  Grid.RowSpan="6">
+            <ItemsControl ItemsSource="{Binding Items}" >
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock></TextBlock>
+                            <TextBlock>Название:</TextBlock>
+                            <TextBox Text="{Binding ColumnName}" Grid.ColumnSpan="2"/>
+                            <TextBlock>Тип:</TextBlock>
+                            <ComboBox  Grid.Column="2" Grid.ColumnSpan="2" SelectedItem ="{Binding Type}">
+                                <sys:String>string</sys:String>
+                                <sys:String>int</sys:String>
+                                <sys:String>uint</sys:String>
+                                <sys:String>double</sys:String>
+                                <sys:String>datetime</sys:String>
+                            </ComboBox>
+                            <TextBlock>Первичный ключ:</TextBlock>
+                            <ComboBox  Grid.Column="2" Grid.ColumnSpan="2" SelectedItem ="{Binding Primary}">
+                                <sys:Boolean>true</sys:Boolean>
+                                <sys:Boolean>false</sys:Boolean>
+                            </ComboBox>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        <Button x:Name="CreateTable" Command="{Binding  CreateTable}" Grid.Column="1" Grid.Row="10" Content="Создать таблицу" Grid.ColumnSpan="4"  Background="DarkSeaGreen"/>
+        
+    </Grid>
+</Window>

@@ -1,0 +1,65 @@
+﻿<Window x:Class="HardLab5.WindowEditTableData"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HardLab5" xmlns:sys="clr-namespace:System;assembly=mscorlib" d:DataContext="{d:DesignInstance Type=local:ViewModelEditTableData}"
+        mc:Ignorable="d"
+        Title="WindowEditTableData" Height="500" Width="700">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="300*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="10*"/>
+            <RowDefinition Height="35*"/>
+            <RowDefinition Height="10*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="5*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="5*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="75*" />
+            <ColumnDefinition Width="10*" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="1" Grid.Row ="1" FontSize="14" Text="Таблица"  TextWrapping="Wrap" VerticalAlignment="Center" TextAlignment="Center" Background="DarkSeaGreen"></TextBlock>
+        <TextBlock Grid.Column="2" Grid.Row ="1" Grid.ColumnSpan="2" FontSize="14" Text="{Binding TableName}" TextWrapping="Wrap" VerticalAlignment="Center" TextAlignment="Center" ></TextBlock>
+
+        <DataGrid Name="DataGridEditTable"  Grid.Column="1"  Grid.Row="3"  AutoGenerateColumns="True" ItemsSource="{Binding DataNewTable}" 
+                RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="11" CanUserAddRows="False"/>
+
+        
+        <TextBlock Grid.Column="1" Grid.Row ="4"  Grid.ColumnSpan="11" FontSize="17" Text="Редактирование данных" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Background="DarkSeaGreen"></TextBlock>
+
+        <Button x:Name="AddRow" Command="{Binding  AddRow}" Grid.Column="1" Grid.ColumnSpan="3" Grid.Row="6"  Background="DarkSeaGreen">
+            <Button.Content>
+                <TextBlock FontSize="14" Text="Добавить строку" TextWrapping="Wrap" TextAlignment="Center"/>
+            </Button.Content>
+        </Button>
+
+
+        <Button x:Name="DeleteRow" Command="{Binding  DeleteRow}" Grid.Column="5" Grid.ColumnSpan="3" Grid.Row="6"  Background="DarkSeaGreen">
+            <Button.Content>
+                <TextBlock FontSize="14" Text="Удалить выделенную строку" TextWrapping="Wrap" TextAlignment="Center"/>
+            </Button.Content>
+        </Button>
+
+
+        <Button x:Name="EditRows" Command="{Binding  EditRows}" Grid.Column="9" Grid.ColumnSpan="3" Grid.Row="6"  Background="DarkSeaGreen">
+            <Button.Content>
+                <TextBlock FontSize="14" Text="Сохранить новые данные" TextWrapping="Wrap" TextAlignment="Center"/>
+            </Button.Content>
+        </Button>
+    </Grid>
+</Window>
