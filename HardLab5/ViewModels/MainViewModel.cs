@@ -320,8 +320,7 @@ namespace HardLab5
                 {
                     names.Add(column.ToString());
                 }
-                names.Add("нет выбора");
-                vmSorted.CurrentColumn = names;
+                vmSorted.CurrentColumns = names;
                 vmSorted.selectedScheme = selectedScheme;
                 vmSorted.selectedTable = selectedTable;
                 foreach (var keyTable in keyTables)

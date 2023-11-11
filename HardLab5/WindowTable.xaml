@@ -49,6 +49,7 @@
                                 <sys:String>uint</sys:String>
                                 <sys:String>double</sys:String>
                                 <sys:String>datetime</sys:String>
+                                <sys:String>boolean</sys:String>
                             </ComboBox>
                             <TextBlock>Первичный ключ:</TextBlock>
                             <ComboBox  Grid.Column="2" Grid.ColumnSpan="2" SelectedItem ="{Binding Primary}">

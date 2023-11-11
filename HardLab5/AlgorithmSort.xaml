@@ -52,13 +52,13 @@
         <DataGrid Name="DataGrid3"  Grid.Column="9" Grid.Row="5"  AutoGenerateColumns="True" ItemsSource="{Binding DataTableС}"  CanUserAddRows="False" 
                   RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="2"/>
 
-        <Button x:Name="Edit" Command="{Binding  Start}" Grid.Column="10" Grid.Row="7"  Background="DarkSeaGreen">
+        <Button x:Name="Edit" IsEnabled="{Binding IsEnable}" Command="{Binding  Start}" Grid.Column="10" Grid.Row="7"  Background="DarkSeaGreen">
             <Button.Content>
                 <TextBlock FontSize="14" Text="Отсортировать" TextWrapping="Wrap" TextAlignment="Center"/>
             </Button.Content>
         </Button>
-        <ComboBox Grid.Column="3" Grid.ColumnSpan ="2" Grid.Row="7" ItemsSource="{Binding ListOfSorts}" SelectedItem="{Binding SelectedSort}"></ComboBox>
-        <ComboBox Grid.Column="6" Grid.ColumnSpan ="3"  Grid.Row="7" ItemsSource="{Binding CurrentColumn}" SelectedItem="{Binding SelectedColumn}"></ComboBox>
+        <ComboBox IsEnabled="{Binding IsEnable}" Grid.Column="3" Grid.ColumnSpan ="2" Grid.Row="7" ItemsSource="{Binding ListOfSorts}" SelectedItem="{Binding SelectedSort}"></ComboBox>
+        <ComboBox IsEnabled="{Binding IsEnable}" Grid.Column="6" Grid.ColumnSpan ="3"  Grid.Row="7" ItemsSource="{Binding CurrentColumns}" SelectedItem="{Binding SelectedColumn}"></ComboBox>
         <Slider x:Name="Slider" Grid.Row="9" Grid.ColumnSpan ="10" Grid.Column="1" Minimum="10" Maximum="1000" Value="{Binding Slider}" SmallChange="10" LargeChange="10"></Slider>
 
     </Grid>

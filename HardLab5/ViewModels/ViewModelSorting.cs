@@ -1,5 +1,7 @@
 ﻿using DummyDB.Core;
+using HardLab5.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -9,7 +11,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Markup.Localizer;
 using System.Xml.Linq;
 
 namespace HardLab5.ViewModels
@@ -29,15 +33,48 @@ namespace HardLab5.ViewModels
             }
         }
 
+        private string _selectedSort;
+        public string SelectedSort
+        {
+            get { return _selectedSort; }
+            set
+            {
+                _selectedSort = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string folderPath;
 
         private List<string> _names;
-        public List<string> CurrentColumn
+        public List<string> CurrentColumns
         {
             get { return _names; }
             set
             {
                 _names = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _selectedColumn;
+        public string SelectedColumn
+        {
+            get { return _selectedColumn; }
+            set
+            {
+                _selectedColumn = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _isEnable = true;
+        public bool IsEnable
+        {
+            get { return _isEnable; }
+            set
+            {
+                _isEnable = value;
                 OnPropertyChanged();
             }
         }
@@ -93,28 +130,6 @@ namespace HardLab5.ViewModels
             }
         }
 
-        private string _selectedColumn;
-        public string SelectedColumn
-        {
-            get { return _selectedColumn; }
-            set
-            {
-                _selectedColumn = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private string _selectedColumnDelete;
-        public string SelectedSort
-        {
-            get { return _selectedColumnDelete; }
-            set
-            {
-                _selectedColumnDelete = value;
-                OnPropertyChanged();
-            }
-        }
-
         private int _slider = 500;
         public int Slider
         {
@@ -130,6 +145,39 @@ namespace HardLab5.ViewModels
         private int _segments;
 
         public ICommand Start => new DelegateCommand(param =>
+        {
+            if (CheckChooses()) return;
+            StartWork();
+        });
+
+        private bool CheckChooses()
+        {
+            if (CurrentColumns.Contains(SelectedColumn)) return false;
+            else
+            {
+                MessageBox.Show("Выберите столбец");
+                return true;
+            }
+        }
+
+        private void StartWork()
+        {
+            switch (SelectedSort)
+            {
+                case "прямое слияние":
+                    StartDirectMerger();
+                    break;
+                case "естественное слияние":
+                    break;
+                case "многопутевое слияние":
+                    break;
+                default:
+                    MessageBox.Show("Выберите сортировку");
+                    break;
+            }
+        }
+
+        private void StartDirectMerger()
         {
             _iterations = 1;
             _segments = 1;
@@ -147,225 +195,36 @@ namespace HardLab5.ViewModels
             }
             DataTableB.Rows.Clear();
             DataTableB = dataTable1;
-            Sort2();
-        });
-
-        private void CreateTwoTables()
-        {
-            //СreateDataTable(1, 2, true);
-            //СreateDataTable(0, 2, false);
-            Thread.Sleep(1000);
+            //DirectMerger directMerger = new DirectMerger(IsEnable, Slider);
+            //directMerger.Sort(SelectedColumn, _segments, _iterations, DataNewTable, DataTableA, DataTableB, keyTable);
+            DirectSort();
         }
 
-
-        private void СreateDataTable(int temp, int step, bool flag)
+        private void ChangeMainTable()
         {
-            DataTable dataTable = new DataTable();
-            selectedScheme = keyTable.Key;
-            selectedTable = keyTable.Value;
-            foreach (Column column in keyTable.Key.Columns)
+            int count = selectedTable.Rows.Count - 1;
+            for (int i = 0; i < DataNewTable.Rows.Count; i++)
             {
-                dataTable.Columns.Add(column.Name);
-            }
-
-            for (int i = temp; i < keyTable.Value.Rows.Count; i += step)
-            {
-                DataRow newRow = dataTable.NewRow();
-                foreach (var element in keyTable.Value.Rows[i].Data)
+                for (int j = 0; j < selectedScheme.Columns.Count; j++)
                 {
-                    newRow[element.Key.Name] = element.Value;
-                }
-                dataTable.Rows.Add(newRow);
-            }
-            if (flag)
-            {
-                DataTableA = dataTable;
-            }
-            else
-            {
-                DataTableB = dataTable;
-            }
-        }
-
-        private void AddRowInTable(DataRow newRow, char table)
-        {
-            if(table == 'A')
-            {
-                DataTableA.Rows.Add(newRow.ItemArray);
-            }
-            else if(table == 'B')
-            { 
-                DataTableB.Rows.Add(newRow.ItemArray);
-            }
-            else
-            {
-                DataNewTable.Rows.Add(newRow.ItemArray);
-            }
-        }
-
-         void Sort()
-        {
-            while (true)
-            {
-                SplitToFiles();
-                // суть сортировки заключается в распределении на
-                // отсортированные последовательности.
-                // если после распределения на 2 вспомогательных файла
-                // выясняется, что последовательность одна, значит файл
-                // отсортирован, завершаем работу.
-                if (_segments == 1)
-                {
-                    break;
-                }
-                MergePairs();
-            }
-        }
-
-        async void SplitToFiles() // разделение на 2 вспом. файла
-        {
-            _segments = 1;
-            int counter = 0;
-            bool flag = true;
-            int counter1 = 0;
-            foreach (DataRow row in DataNewTable.Rows)
-            {
-                // если достигли количества элементов в последовательности -
-                // меняем флаг для след. файла и обнуляем счетчик количества
-                if (counter == _iterations)
-                {
-                    flag = !flag;
-                    counter = 0;
-                    _segments++;
-                }
-                if (flag)
-                {
-                    AddRowInTable(row, 'A');
-                    counter++;
-                }
-                else
-                {
-                    AddRowInTable(row, 'B');
-                    counter++;
-                }
-                counter1++;
-
-                await Task.Delay(1000);
-            }
-            flag = true;
-        }
-
-        private void MergePairs() // слияние отсорт. последовательностей обратно в файл
-        {
-            DataNewTable.Rows.Clear();
-            DataRow newRowA = DataNewTable.NewRow();
-            DataRow newRowB = DataNewTable.NewRow();
-            int counterA = _iterations;
-            int counterB = _iterations;
-            bool pickedA = false, pickedB = false, endA = false, endB = false;
-            int positionA = 0;
-            int positionB = 0;
-            int currentPA = 0;
-            int currentPB = _iterations;
-            DataTable dataTable = new DataTable();
-            foreach (Column column in keyTable.Key.Columns)
-            {
-                dataTable.Columns.Add(column.Name);
-            }
-            while (true)
-            {
-                if (endA && endB)
-                {
-                    break;
-                }
-
-                if (counterA == 0 && counterB == 0)
-                {
-                    counterA = _iterations;
-                    counterB = _iterations;
-                }
-
-                if (positionA != DataTableA.Rows.Count)
-                {
-                    if (counterA > 0)
+                    if (i >= selectedTable.Rows.Count)
                     {
-                        if (!pickedA)
-                        {
-                            newRowA = DataTableA.Rows[positionA];
-                            positionA += 1;
-                            pickedA = true;
-                        }
+                        selectedTable.Rows.Add(new Row() { Data = new Dictionary<Column, object>() });
                     }
+                    string data = DataNewTable.Rows[i][selectedScheme.Columns[j].Name].ToString();
+                    selectedTable.Rows[i].Data[selectedScheme.Columns[j]] = data;
                 }
-                else
-                {
-                    endA = true;
-                }
-
-                if (positionB != DataTableB.Rows.Count)
-                {
-                    if (counterB > 0)
-                    {
-                        if (!pickedB)
-                        {
-                            newRowB = DataTableB.Rows[positionB];
-                            positionB += 1;
-                            pickedB = true;
-                        }
-                    }
-                }
-                else
-                {
-                    endB = true;
-                }
-
-                if (endA && endB && pickedA == false && pickedB == false)
-                {
-                    break;
-                }
-                if (pickedA)
-                {
-                    if (pickedB)
-                    {
-                        DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
-                        int tempA = int.Parse(string.Format("{0}", newRowA[myColunm.ToString()]));
-                        int tempB = int.Parse(string.Format("{0}", newRowB[myColunm.ToString()]));
-                        if (tempA < tempB)
-                        {
-                            dataTable.Rows.Add(newRowA.ItemArray);
-                            counterA--;
-                            pickedA = false;
-                        }
-                        else
-                        {
-                            dataTable.Rows.Add(newRowB.ItemArray);
-                            counterB--;
-                            pickedB = false;
-                        }
-                    }
-                    else
-                    {
-                        dataTable.Rows.Add(newRowA.ItemArray);
-                        counterA--;
-                        pickedA = false;
-                    }
-                }
-                else if (pickedB)
-                {
-                    dataTable.Rows.Add(newRowB.ItemArray);
-                    counterB--;
-                    pickedB = false;
-                }
-                currentPA += positionA;
-                currentPB += positionB;
             }
-            _iterations *= 2; // увеличиваем размер серии в 2 раза
-            DataNewTable = dataTable;
-            DataTableA.Rows.Clear();
-            DataTableB.Rows.Clear();
         }
 
-        async void Sort2()
+        private void AddRowInTable(DataRow newRow, DataTable dataTable)
         {
+            dataTable.Rows.Add(newRow.ItemArray);
+        }
+
+        async void DirectSort()
+        {
+            IsEnable = false;
             while (true)
             {
                 _segments = 1;
@@ -385,15 +244,15 @@ namespace HardLab5.ViewModels
                     if (flag)
                     {
                        
-                        AddRowInTable(row, 'A');
+                        AddRowInTable(row, DataTableA);
                         counter++;
-                        await Task.Delay(500);
+                        await Task.Delay(1010 - Slider);
                     }
                     else
                     {
-                        AddRowInTable(row, 'B');
+                        AddRowInTable(row, DataTableB);
                         counter++;
-                        await Task.Delay(500);
+                        await Task.Delay(1010 - Slider);
                     }
                     counter1++;
 
@@ -415,11 +274,6 @@ namespace HardLab5.ViewModels
                 int positionB = 0;
                 int currentPA = 0;
                 int currentPB = _iterations;
-                DataTable dataTable = new DataTable();
-                foreach (Column column in keyTable.Key.Columns)
-                {
-                    dataTable.Columns.Add(column.Name);
-                }
                 for(int i = 0; i < 1000; i++)
                 {
                     if (endA && endB)
@@ -476,51 +330,123 @@ namespace HardLab5.ViewModels
                         if (pickedB)
                         {
                             DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
-                            int tempA = int.Parse(string.Format("{0}", newRowA[myColunm.ToString()]));
-                            int tempB = int.Parse(string.Format("{0}", newRowB[myColunm.ToString()]));
-                            if (tempA < tempB)
+                            string tempA = string.Format("{0}", newRowA[myColunm.ToString()]);
+                            string tempB = string.Format("{0}", newRowB[myColunm.ToString()]);
+                            if (CompareDifferentTypes(tempA, tempB))
                             {
-                                AddRowInTable(newRowA, 'M');
+                                AddRowInTable(newRowA, DataNewTable);
                                 counterA--;
                                 pickedA = false;
 
-                                await Task.Delay(500);
+                                await Task.Delay(1010 - Slider);
                             }
                             else
                             {
-                                AddRowInTable(newRowB, 'M');
+                                AddRowInTable(newRowB, DataNewTable);
                                 counterB--;
                                 pickedB = false;
                             }
                         }
                         else
                         {
-                            AddRowInTable(newRowA, 'M');
+                            AddRowInTable(newRowA, DataNewTable);
                             counterA--;
                             pickedA = false;
 
-                            await Task.Delay(500);
+                            await Task.Delay(1010 - Slider);
                         }
                     }
                     else if (pickedB)
                     {
-                        AddRowInTable(newRowB, 'M');
+                        AddRowInTable(newRowB, DataNewTable);
                         counterB--;
                         pickedB = false;
 
-                        await Task.Delay(500);
+                        await Task.Delay(1010 - Slider);
                     }
 
                     currentPA += positionA;
                     currentPB += positionB;
                 }
                 _iterations *= 2; // увеличиваем размер серии в 2 раза
-                //DataNewTable = dataTable;
                 DataTableA.Rows.Clear();
                 DataTableB.Rows.Clear();
             }
+            IsEnable = true;
+            ChangeMainTable();
+            FileRewriter.RewriteCSV(folderPath, selectedTable, selectedScheme);
+        }
 
-           
+        private bool CompareDifferentTypes(string tempA, string tempB)
+        {
+            string type = "";
+            foreach (Column column in keyTable.Key.Columns)
+            {
+                if(column.Name == SelectedColumn)
+                {
+                    type = column.Type;
+                }
+            }
+            switch (type)
+            {
+                case "uint":
+                    {
+                        return CheckDouble(tempA, tempB);
+                    }
+                case "int":
+                    {
+                        return CheckDouble(tempA, tempB);
+                    }
+                case "double":
+                    {
+                        return CheckDouble(tempA, tempB);
+                    }
+                case "datetime":
+                    {
+                        return CheckDateTime(tempA, tempB);
+                    }
+                case "string":
+                    {
+                        return CheckString(tempA, tempB);
+                    }
+                case "bool":
+                    {
+                        return CheckDouble(tempA, tempB);
+                    }
+            }
+            return true;
+        }
+
+        private bool CheckDouble(string tempA, string tempB)
+        {
+            double tA = double.Parse(tempA);
+            double tB = double.Parse(tempB);
+            if(tA < tB)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool CheckDateTime(string tempA, string tempB)
+        {
+            DateTime tA = DateTime.Parse(tempA);
+            DateTime tB = DateTime.Parse(tempB);
+            if (tA < tB)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool CheckString(string tempA, string tempB)
+        {
+            int b = tempA.CompareTo(tempB);
+            if (b == -1)
+            {
+                return true;
+            }
+            return false;
         }
 
     }
