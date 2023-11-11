@@ -42,7 +42,7 @@
         <TreeView Grid.Column="1" Grid.Row="3">
             <TreeViewItem Name="folderTree" />
         </TreeView>
-        <DataGrid Name="DataGrid"  Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True" ItemsSource="{Binding DataTable}"  CanUserAddRows="False" 
+        <DataGrid Name="DataGrid"  Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True" ItemsSource="{Binding DataCurrentTable}"  CanUserAddRows="False" 
                   RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="6"/>
         <Button x:Name="CreateDB" Command="{Binding  CreateNewDB}" FontSize="14" Grid.Column="3" Grid.Row="5" Content="Создать БД" Background="DarkSeaGreen"/>
         <Button x:Name="CreateNewTable" Command="{Binding  CreateNewTable}" FontSize="14" Grid.Column="4" Grid.Row="5" Content="Создать таблицу" Background="DarkSeaGreen"/>
