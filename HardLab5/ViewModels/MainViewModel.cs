@@ -55,7 +55,7 @@ namespace HardLab5
         }
 
         private DataTable _dataTable;
-        public DataTable DataTable
+        public DataTable DataCurrentTable
         {
             get { return _dataTable; }
             set
@@ -192,7 +192,7 @@ namespace HardLab5
                     break;
                 }
             }
-            DataTable = dataTable;
+            DataCurrentTable = dataTable;
         }
 
         private DataTable GreateDataTable(KeyValuePair<TableScheme, Table> keyTable, DataTable dataTable)
@@ -253,17 +253,17 @@ namespace HardLab5
 
         public ICommand EditTable => new DelegateCommand(param =>
         {
-            if (DataTable != null)
+            if (DataCurrentTable != null)
             {
                 WindowEditTable wind = new WindowEditTable();
                 ViewModelEditTable vmEditTable = new ViewModelEditTable();
                 wind.DataContext = vmEditTable;
                 vmEditTable.DataGrid = wind.DataGridEditTable;
-                vmEditTable.DataNewTable = DataTable;
+                vmEditTable.DataNewTable = DataCurrentTable;
                 vmEditTable.TableName = tableName;
                 vmEditTable.folderPath = folderPath;
                 List<string> names = new List<string>();
-                foreach (var column in DataTable.Columns)
+                foreach (var column in DataCurrentTable.Columns)
                 {
                     names.Add(column.ToString());
                 }
@@ -281,13 +281,13 @@ namespace HardLab5
 
         public ICommand EditTableData => new DelegateCommand(param =>
         {
-            if (DataTable != null)
+            if (DataCurrentTable != null)
             {
                 WindowEditTableData wind = new WindowEditTableData();
                 ViewModelEditTableData vmEditTableData = new ViewModelEditTableData();
                 wind.DataContext = vmEditTableData;
                 vmEditTableData.DataGrid = wind.DataGridEditTable;
-                vmEditTableData.DataNewTable = DataTable;
+                vmEditTableData.DataNewTable = DataCurrentTable;
                 vmEditTableData.TableName = tableName;
                 vmEditTableData.folderPath = folderPath;
                 vmEditTableData.selectedScheme = selectedScheme;
@@ -302,23 +302,35 @@ namespace HardLab5
 
         public ICommand SortTable => new DelegateCommand(param =>
         {
-            if (DataTable != null)
+            if (DataCurrentTable != null)
             {
                 AlgorithmSort wind = new AlgorithmSort();
-                ViewModelSorting vmEditTableData = new ViewModelSorting();
-                wind.DataContext = vmEditTableData;
-                vmEditTableData.DataGrid = wind.DataGrid;
-                vmEditTableData.DataNewTable = DataTable;
-                vmEditTableData.folderPath = folderPath;
+                ViewModelSorting vmSorted = new ViewModelSorting();
+                wind.DataContext = vmSorted;
+                vmSorted.DataGrid = wind.DataNewGrid;
+                vmSorted.DataGrid1 = wind.DataGrid1;
+                vmSorted.DataGrid2 = wind.DataGrid2;
+                vmSorted.DataNewTable = DataCurrentTable;
+                vmSorted.DataTableA = new DataTable();
+                vmSorted.DataTableB = new DataTable();
+                vmSorted.DataTableC = new DataTable();
+                vmSorted.folderPath = folderPath;
                 List<string> names = new List<string>();
-                foreach (var column in DataTable.Columns)
+                foreach (var column in DataCurrentTable.Columns)
                 {
                     names.Add(column.ToString());
                 }
-                names.Add("нет выбора");
-                vmEditTableData.CurrentColumn = names;
-                vmEditTableData.selectedScheme = selectedScheme;
-                vmEditTableData.selectedTable = selectedTable;
+                vmSorted.CurrentColumns = names;
+                vmSorted.selectedScheme = selectedScheme;
+                vmSorted.selectedTable = selectedTable;
+                foreach (var keyTable in keyTables)
+                {
+                    if (keyTable.Key.Name == tableName)
+                    {
+                        vmSorted.keyTable = keyTable;
+                        break;
+                    }
+                }
                 wind.ShowDialog();
             }
             else
