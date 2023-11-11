@@ -131,7 +131,8 @@ namespace HardLab5.ViewModels
 
         public ICommand Start => new DelegateCommand(param =>
         {
-            //CreateTwoTables();
+            _iterations = 1;
+            _segments = 1;
             DataTable dataTable = new DataTable();
             foreach (Column column in keyTable.Key.Columns)
             {
@@ -146,7 +147,7 @@ namespace HardLab5.ViewModels
             }
             DataTableB.Rows.Clear();
             DataTableB = dataTable1;
-            Sort();
+            Sort2();
         });
 
         private void CreateTwoTables()
@@ -192,9 +193,13 @@ namespace HardLab5.ViewModels
             {
                 DataTableA.Rows.Add(newRow.ItemArray);
             }
-            else
+            else if(table == 'B')
             { 
                 DataTableB.Rows.Add(newRow.ItemArray);
+            }
+            else
+            {
+                DataNewTable.Rows.Add(newRow.ItemArray);
             }
         }
 
@@ -202,7 +207,7 @@ namespace HardLab5.ViewModels
         {
             while (true)
             {
-                SplitToFilesAsync();
+                SplitToFiles();
                 // суть сортировки заключается в распределении на
                 // отсортированные последовательности.
                 // если после распределения на 2 вспомогательных файла
@@ -216,7 +221,7 @@ namespace HardLab5.ViewModels
             }
         }
 
-          void SplitToFilesAsync() // разделение на 2 вспом. файла
+        async void SplitToFiles() // разделение на 2 вспом. файла
         {
             _segments = 1;
             int counter = 0;
@@ -243,6 +248,8 @@ namespace HardLab5.ViewModels
                     counter++;
                 }
                 counter1++;
+
+                await Task.Delay(1000);
             }
             flag = true;
         }
@@ -357,7 +364,164 @@ namespace HardLab5.ViewModels
             DataTableB.Rows.Clear();
         }
 
+        async void Sort2()
+        {
+            while (true)
+            {
+                _segments = 1;
+                int counter = 0;
+                bool flag = true;
+                int counter1 = 0;
+                foreach (DataRow row in DataNewTable.Rows)
+                {
+                    // если достигли количества элементов в последовательности -
+                    // меняем флаг для след. файла и обнуляем счетчик количества
+                    if (counter == _iterations)
+                    {
+                        flag = !flag;
+                        counter = 0;
+                        _segments++;
+                    }
+                    if (flag)
+                    {
+                       
+                        AddRowInTable(row, 'A');
+                        counter++;
+                        await Task.Delay(500);
+                    }
+                    else
+                    {
+                        AddRowInTable(row, 'B');
+                        counter++;
+                        await Task.Delay(500);
+                    }
+                    counter1++;
 
-        
+                }
+                flag = true;
+                
+                if (_segments == 1)
+                {
+                    break;
+                }
+
+                DataNewTable.Rows.Clear();
+                DataRow newRowA = DataNewTable.NewRow();
+                DataRow newRowB = DataNewTable.NewRow();
+                int counterA = _iterations;
+                int counterB = _iterations;
+                bool pickedA = false, pickedB = false, endA = false, endB = false;
+                int positionA = 0;
+                int positionB = 0;
+                int currentPA = 0;
+                int currentPB = _iterations;
+                DataTable dataTable = new DataTable();
+                foreach (Column column in keyTable.Key.Columns)
+                {
+                    dataTable.Columns.Add(column.Name);
+                }
+                for(int i = 0; i < 1000; i++)
+                {
+                    if (endA && endB)
+                    {
+                        break;
+                    }
+
+                    if (counterA == 0 && counterB == 0)
+                    {
+                        counterA = _iterations;
+                        counterB = _iterations;
+                    }
+
+                    if (positionA != DataTableA.Rows.Count)
+                    {
+                        if (counterA > 0)
+                        {
+                            if (!pickedA)
+                            {
+                                newRowA = DataTableA.Rows[positionA];
+                                positionA += 1;
+                                pickedA = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        endA = true;
+                    }
+
+                    if (positionB != DataTableB.Rows.Count)
+                    {
+                        if (counterB > 0)
+                        {
+                            if (!pickedB)
+                            {
+                                newRowB = DataTableB.Rows[positionB];
+                                positionB += 1;
+                                pickedB = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        endB = true;
+                    }
+
+                    if (endA && endB && pickedA == false && pickedB == false)
+                    {
+                        break;
+                    }
+                    if (pickedA)
+                    {
+                        if (pickedB)
+                        {
+                            DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
+                            int tempA = int.Parse(string.Format("{0}", newRowA[myColunm.ToString()]));
+                            int tempB = int.Parse(string.Format("{0}", newRowB[myColunm.ToString()]));
+                            if (tempA < tempB)
+                            {
+                                AddRowInTable(newRowA, 'M');
+                                counterA--;
+                                pickedA = false;
+
+                                await Task.Delay(500);
+                            }
+                            else
+                            {
+                                AddRowInTable(newRowB, 'M');
+                                counterB--;
+                                pickedB = false;
+                            }
+                        }
+                        else
+                        {
+                            AddRowInTable(newRowA, 'M');
+                            counterA--;
+                            pickedA = false;
+
+                            await Task.Delay(500);
+                        }
+                    }
+                    else if (pickedB)
+                    {
+                        AddRowInTable(newRowB, 'M');
+                        counterB--;
+                        pickedB = false;
+
+                        await Task.Delay(500);
+                    }
+
+                    currentPA += positionA;
+                    currentPB += positionB;
+                }
+                _iterations *= 2; // увеличиваем размер серии в 2 раза
+                //DataNewTable = dataTable;
+                DataTableA.Rows.Clear();
+                DataTableB.Rows.Clear();
+            }
+
+           
+        }
+
     }
 }
