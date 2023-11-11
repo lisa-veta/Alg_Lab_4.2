@@ -64,6 +64,11 @@ namespace DummyDB.Core
                             row.Data.Add(tableScheme.Columns[i], line[i]);
                             break;
                         }
+                    case "bool":
+                        {
+                            row.Data.Add(tableScheme.Columns[i], CheckBool(line[i], pathTable, numberOfLine, i));
+                            break;
+                        }
                 }
             }
             return row;
@@ -99,6 +104,15 @@ namespace DummyDB.Core
         private static DateTime CheckDateTime(string element, string pathTable, int numberOfLine, int numberOfColumn)
         {
             if (DateTime.TryParse(element, out DateTime number))
+            {
+                return number;
+            }
+            throw new ArgumentException($"Ошибка в файле <{pathTable}>, в строке номер {numberOfLine + 1}, столбце номер  {numberOfColumn + 1}. Описание ошибки: некорректные данные");
+        }
+
+        private static bool CheckBool(string element, string pathTable, int numberOfLine, int numberOfColumn)
+        {
+            if (bool.TryParse(element, out bool number))
             {
                 return number;
             }
