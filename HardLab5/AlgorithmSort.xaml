@@ -49,7 +49,7 @@
                   RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="2"/>
         <DataGrid Name="DataGrid2"  Grid.Column="5" Grid.Row="5"  AutoGenerateColumns="True" ItemsSource="{Binding DataTableB}"  CanUserAddRows="False" 
                   RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="4"/>
-        <DataGrid Name="DataGrid3"  Grid.Column="9" Grid.Row="5"  AutoGenerateColumns="True" ItemsSource="{Binding DataTableB}"  CanUserAddRows="False" 
+        <DataGrid Name="DataGrid3"  Grid.Column="9" Grid.Row="5"  AutoGenerateColumns="True" ItemsSource="{Binding DataTableС}"  CanUserAddRows="False" 
                   RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="2"/>
 
         <Button x:Name="Edit" Command="{Binding  Start}" Grid.Column="10" Grid.Row="7"  Background="DarkSeaGreen">

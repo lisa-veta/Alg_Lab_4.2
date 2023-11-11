@@ -313,6 +313,7 @@ namespace HardLab5
                 vmSorted.DataNewTable = DataCurrentTable;
                 vmSorted.DataTableA = new DataTable();
                 vmSorted.DataTableB = new DataTable();
+                vmSorted.DataTableC = new DataTable();
                 vmSorted.folderPath = folderPath;
                 List<string> names = new List<string>();
                 foreach (var column in DataCurrentTable.Columns)

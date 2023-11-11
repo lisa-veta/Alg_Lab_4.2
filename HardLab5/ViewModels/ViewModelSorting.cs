@@ -137,12 +137,14 @@ namespace HardLab5.ViewModels
             {
                 dataTable.Columns.Add(column.Name);
             }
+            DataTableA.Rows.Clear();
             DataTableA = dataTable;
             DataTable dataTable1 = new DataTable();
             foreach (Column column in keyTable.Key.Columns)
             {
                 dataTable1.Columns.Add(column.Name);
             }
+            DataTableB.Rows.Clear();
             DataTableB = dataTable1;
             Sort();
         });
@@ -188,22 +190,10 @@ namespace HardLab5.ViewModels
         {
             if(table == 'A')
             {
-                //DataRow newRow = DataTableA.NewRow();
-                //foreach (var element in keyTable.Value.Rows[i].Data)
-                //{
-                //    newRow[element.Key.Name] = element.Value;
-                //}
-                //DataTableA.Rows.Add(newRow);
                 DataTableA.Rows.Add(newRow.ItemArray);
             }
             else
-            {
-                //DataRow newRow = DataTableA.NewRow();
-                //foreach (var element in keyTable.Value.Rows[i].Data)
-                //{
-                //    newRow[element.Key.Name] = element.Value;
-                //}
-                //DataTableA.Rows.Add(newRow);
+            { 
                 DataTableB.Rows.Add(newRow.ItemArray);
             }
         }
@@ -212,13 +202,12 @@ namespace HardLab5.ViewModels
         {
             while (true)
             {
-                SplitToFiles();
+                SplitToFilesAsync();
                 // суть сортировки заключается в распределении на
                 // отсортированные последовательности.
                 // если после распределения на 2 вспомогательных файла
                 // выясняется, что последовательность одна, значит файл
                 // отсортирован, завершаем работу.
-                
                 if (_segments == 1)
                 {
                     break;
@@ -227,7 +216,7 @@ namespace HardLab5.ViewModels
             }
         }
 
-         void SplitToFiles() // разделение на 2 вспом. файла
+          void SplitToFilesAsync() // разделение на 2 вспом. файла
         {
             _segments = 1;
             int counter = 0;
@@ -275,7 +264,6 @@ namespace HardLab5.ViewModels
             {
                 dataTable.Columns.Add(column.Name);
             }
-            //DataTableB = dataTable;
             while (true)
             {
                 if (endA && endB)
@@ -332,24 +320,8 @@ namespace HardLab5.ViewModels
                     if (pickedB)
                     {
                         DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
-                        //int tempA = newRowA.Field<int>(myColunm);
                         int tempA = int.Parse(string.Format("{0}", newRowA[myColunm.ToString()]));
                         int tempB = int.Parse(string.Format("{0}", newRowB[myColunm.ToString()]));
-                        //int tempB = newRowB.Field<int>(myColunm);
-                        //foreach (var rows in keyTable.Value.Rows[currentPA].Data)
-                        //{
-                        //    if(rows.Key.Name == SelectedColumn)
-                        //    {
-                        //        tempA = int.Parse(string.Format("{0}", rows.Value));
-                        //    }
-                        //}
-                        //foreach (var rows in keyTable.Value.Rows[currentPB].Data)
-                        //{
-                        //    if (rows.Key.Name == SelectedColumn)
-                        //    {
-                        //        tempB = int.Parse(string.Format("{0}", rows.Value));
-                        //    }
-                        //}
                         if (tempA < tempB)
                         {
                             dataTable.Rows.Add(newRowA.ItemArray);
@@ -386,125 +358,6 @@ namespace HardLab5.ViewModels
         }
 
 
-        private void MergePairs1() // слияние отсорт. последовательностей обратно в файл
-        {
-            DataNewTable.Rows.Clear();
-            int counterA = _iterations;
-            int counterB = _iterations;
-            bool pickedA = false, pickedB = false, endA = false, endB = false;
-            int positionA = 0;
-            int positionB = 0;
-            DataRow newRowA = DataTableA.Rows[0];
-            DataRow newRowB = DataTableA.Rows[0];
-            DataTable dataTable = new DataTable();
-            foreach (Column column in keyTable.Key.Columns)
-            {
-                dataTable.Columns.Add(column.Name);
-            }
-            while (!endA || !endB)
-            {
-                if (endA && endB)
-                {
-                    break;
-                }
-
-                if (counterA == 0 && counterB == 0)
-                {
-                    counterA = _iterations;
-                    counterB = _iterations;
-                }
-
-                if (positionA != DataTableA.Rows.Count)
-                {
-                    if (counterA > 0)
-                    {
-                        if (!pickedA)
-                        {
-                            newRowA = DataTableA.Rows[positionA];
-                            positionA += 1;
-                            pickedA = true;
-                        }
-                    }
-                }
-                else
-                {
-                    endA = true;
-                }
-
-                if (positionB != DataTableB.Rows.Count)
-                {
-                    if (counterB > 0)
-                    {
-                        if (!pickedB)
-                        {
-                            newRowB = DataTableB.Rows[positionB];
-                            positionB += 1;
-                            pickedB = true;
-                        }
-                    }
-                }
-                else
-                {
-                    endB = true;
-                }
-
-                if (endA && endB && pickedA == false && pickedB == false)
-                {
-                    break;
-                }
-                if (pickedA)
-                {
-                    if (pickedB)
-                    {
-                        int tempA = 0;
-                        int tempB = 0;
-                        foreach (var rows in keyTable.Value.Rows[positionA-1].Data)
-                        {
-                            if (rows.Key.Name == SelectedColumn)
-                            {
-                                tempA = int.Parse(string.Format("{0}", rows.Value));
-                            }
-                        }
-                        foreach (var rows in keyTable.Value.Rows[positionB-1].Data)
-                        {
-                            if (rows.Key.Name == SelectedColumn)
-                            {
-                                tempB = int.Parse(string.Format("{0}", rows.Value)); ;
-                            }
-                        }
-                        if (tempA < tempB)
-                        {
-                            dataTable.Rows.Add(newRowA.ItemArray);
-                            counterA--;
-                            pickedA = false;
-                        }
-                        else
-                        {
-
-                            dataTable.Rows.Add(newRowB.ItemArray);
-                            counterB--;
-                            pickedB = false;
-                        }
-                    }
-                    else
-                    {
-                        dataTable.Rows.Add(newRowA.ItemArray);
-                        counterA--;
-                        pickedA = false;
-                    }
-                }
-                else if (pickedB)
-                {
-                    dataTable.Rows.Add(newRowB.ItemArray);
-                    counterB--;
-                    pickedB = false;
-                }
-
-            }
-            _iterations *= 2; // увеличиваем размер серии в 2 раза
-            DataNewTable = dataTable;
-            DataTableA.Rows.Clear();
-            DataTableB.Rows.Clear();
-        }
+        
     }
 }
