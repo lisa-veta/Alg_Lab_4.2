@@ -310,10 +310,11 @@ namespace HardLab5
                 vmSorted.DataGrid = wind.DataNewGrid;
                 vmSorted.DataGrid1 = wind.DataGrid1;
                 vmSorted.DataGrid2 = wind.DataGrid2;
+                vmSorted.DataGrid3 = wind.DataGrid3;
                 vmSorted.DataNewTable = DataCurrentTable;
                 vmSorted.DataTableA = new DataTable();
                 vmSorted.DataTableB = new DataTable();
-                vmSorted.DataTableC = new DataTable();
+                vmSorted.DataTableС = new DataTable();
                 vmSorted.folderPath = folderPath;
                 List<string> names = new List<string>();
                 foreach (var column in DataCurrentTable.Columns)

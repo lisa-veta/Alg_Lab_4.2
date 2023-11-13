@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HardLab5"
         mc:Ignorable="d"
-        Title="AlgorithmSort" Height="650" Width="1000">
+        Title="AlgorithmSort" Height="650" Width="1100">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="27*"/>
@@ -22,7 +22,7 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="10*" />
-            <ColumnDefinition Width="285*" />
+            <ColumnDefinition Width="335*" />
             <ColumnDefinition Width="10*" />
             <ColumnDefinition Width="150*" />
             <ColumnDefinition Width="150*" />
@@ -41,7 +41,7 @@
         <TextBlock FontSize="14" Grid.Column="9" Grid.Row ="4" Text="Таблица C" Background="DarkSeaGreen" Grid.ColumnSpan="2" TextWrapping="Wrap" TextAlignment="Center"></TextBlock>
 
         <ScrollViewer Grid.Row="3" Grid.Column="1" Grid.RowSpan="3" VerticalScrollBarVisibility="Auto">
-            <ItemsControl Foreground="#FFFEF7" ItemsSource="{Binding Movements}"></ItemsControl>
+            <ItemsControl Foreground="Black" ItemsSource="{Binding Movements}"></ItemsControl>
         </ScrollViewer>
         <DataGrid Name="DataNewGrid"  Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True" ItemsSource="{Binding DataNewTable}"  CanUserAddRows="False" 
                   RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="8"/>
