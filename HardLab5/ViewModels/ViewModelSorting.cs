@@ -168,6 +168,7 @@ namespace HardLab5.ViewModels
                     StartDirectMerger();
                     break;
                 case "естественное слияние":
+                    StartNatureMerger();
                     break;
                 case "многопутевое слияние":
                     break;
@@ -448,6 +449,133 @@ namespace HardLab5.ViewModels
             }
             return false;
         }
+        
+        private void StartNatureMerger()
+        {
+            _iterations = 1;
+            _segments = 1;
+            DataTable dataTable = new DataTable();
+            foreach (Column column in keyTable.Key.Columns)
+            {
+                dataTable.Columns.Add(column.Name);
+            }
+            DataTableA.Rows.Clear();
+            DataTableA = dataTable;
+            DataTable dataTable1 = new DataTable();
+            foreach (Column column in keyTable.Key.Columns)
+            {
+                dataTable1.Columns.Add(column.Name);
+            }
+            DataTableB.Rows.Clear();
+            DataTableB = dataTable1;
+            NativeOuterSort();
+        }
+        
+        //iterations - сколько элементов должно быть в каждом сегменте данных
+        private List<int> _series = new List<int>();
 
+        async void NativeOuterSort()
+        {
+            IsEnable = false;
+            while (true)
+            {
+                bool flag = true;
+                int counter = 0; //элементы в серии
+                DataColumn myColumn = DataNewTable.Columns.Cast<DataColumn>()
+                    .SingleOrDefault(col => col.ColumnName == SelectedColumn);
+                for (int i = 0; i < DataNewTable.Rows.Count - 1; i++)
+                {
+                    var tempFlag = flag;
+                    DataRow row1 = DataNewTable.Rows[i];
+                    DataRow row2 = DataNewTable.Rows[i + 1];
+                    string line1 = string.Format("{0}", row1[myColumn.ToString()]);
+                    string line2 = string.Format("{0}", row2[myColumn.ToString()]);
+                    if (CompareDifferentTypes(line1, line2)) //если 1<2 true
+                    {
+                        counter++;
+                    }
+                    else
+                    {
+                        tempFlag = !tempFlag;
+                        _series.Add(counter + 1);
+                        counter = 0;
+                    }
+
+                    if (flag)
+                    {
+                        AddRowInTable(row1, DataTableA);
+                    }
+                    else
+                    {
+                        AddRowInTable(row1, DataTableB);
+                    }
+
+                    flag = tempFlag;
+                }
+                _series.Add(counter + 1); //распределение по таблицам завершено
+
+                //слияние таблиц
+                DataNewTable.Rows.Clear();
+                DataRow newRowA = DataTableA.NewRow();
+                DataRow newRowB = DataTableB.NewRow();
+
+                var indexA = 0;
+                var indexB = 1;
+                var counterA = 0;
+                var counterB = 0;
+                int indForA = 0;
+                int indForB = 0;
+
+                newRowA = DataTableA.Rows[indForA]; //строка из а
+                newRowB = DataTableB.Rows[indForB]; //строка из б
+                string elementA = string.Format("{0}", newRowA[myColumn.ToString()]);
+                string elementB = string.Format("{0}", newRowB[myColumn.ToString()]);
+
+                while (DataTableA.Rows[indForA] != null || DataTableB.Rows[indForB] != null)
+                {
+                    if (counterA == _series[indexA] && counterB == _series[indexB])
+                    {
+                        counterA = 0;
+                        counterB = 0;
+                        indexA += 2;
+                        indexB += 2;
+                        continue;
+                    }
+
+                    if (indexA == _series.Count || counterA == _series[indexA])
+                    {
+                        newRowB = DataTableB.Rows[indForB];
+                        AddRowInTable(newRowB, DataNewTable);
+                        indForB++;
+                        counterB++;
+                        continue;
+                    }
+
+                    if (indexB == _series.Count || counterB == _series[indexB])
+                    {
+                        newRowA = DataTableA.Rows[indForA];
+                        AddRowInTable(newRowA, DataNewTable);
+                        indForA++;
+                        counterA++;
+                        continue;
+                    }
+
+                    if (CompareDifferentTypes(elementA, elementB))
+                    {
+                        newRowA = DataTableA.Rows[indForA];
+                        AddRowInTable(newRowA, DataNewTable);
+                        indForA++;
+                        counterA++;
+                    }
+                    else
+                    {
+                        newRowB = DataTableB.Rows[indForB];
+                        AddRowInTable(newRowB, DataNewTable);
+                        indForB++;
+                        counterB++;
+                    }
+                }
+            }
+        }
     }
 }
