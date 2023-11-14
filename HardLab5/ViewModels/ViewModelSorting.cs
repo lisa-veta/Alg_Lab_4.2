@@ -528,7 +528,6 @@ namespace HardLab5.ViewModels
                 DataRow newRowB = DataNewTable.NewRow();
                 DataRow newRowC = DataNewTable.NewRow();
 
-                string elementA = null, elementB = null;
                 bool pickedA = false, pickedB = false;
                 int positionA = 0, positionB = 0;
                 int seriaA = 0; int seriaB = 0;
@@ -603,8 +602,9 @@ namespace HardLab5.ViewModels
                 DataTableA.Rows.Clear();
                 DataTableB.Rows.Clear();
             }
-
             IsEnable = true;
+            ChangeMainTable();
+            FileRewriter.RewriteCSV(folderPath, selectedTable, selectedScheme);
         }
         //async void NativeOuterSort()
         //{
