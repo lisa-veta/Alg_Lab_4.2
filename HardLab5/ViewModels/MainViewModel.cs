@@ -340,5 +340,44 @@ namespace HardLab5
             }
         });
 
+        public MainWindow MainWindow
+        {
+            get => default;
+            set
+            {
+            }
+        }
+
+        internal DelegateCommand DelegateCommand
+        {
+            get => default;
+            set
+            {
+            }
+        }
+
+        public FileRewriter FileRewriter
+        {
+            get => default;
+            set
+            {
+            }
+        }
+
+        public Table Table
+        {
+            get => default;
+            set
+            {
+            }
+        }
+
+        public TableScheme TableScheme
+        {
+            get => default;
+            set
+            {
+            }
+        }
     }
 }

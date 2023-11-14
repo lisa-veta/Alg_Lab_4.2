@@ -556,7 +556,7 @@ namespace HardLab5.ViewModels
                 int currentPA = 0; int currentPB = 0; int currentPC = 0;
                 while(true)
                 {
-                    if (endA && endB && endC)
+                    if (endA && endB && endC && pickedA == false && pickedB == false && pickedC == false)
                     {
                         break;
                     }
@@ -782,6 +782,46 @@ namespace HardLab5.ViewModels
             IsEnable = true;
             ChangeMainTable();
             FileRewriter.RewriteCSV(folderPath, selectedTable, selectedScheme);
+        }
+
+        public AlgorithmSort AlgorithmSort
+        {
+            get => default;
+            set
+            {
+            }
+        }
+
+        internal DelegateCommand DelegateCommand
+        {
+            get => default;
+            set
+            {
+            }
+        }
+
+        public FileRewriter FileRewriter
+        {
+            get => default;
+            set
+            {
+            }
+        }
+
+        public Table Table
+        {
+            get => default;
+            set
+            {
+            }
+        }
+
+        public TableScheme TableScheme
+        {
+            get => default;
+            set
+            {
+            }
         }
     }
 }

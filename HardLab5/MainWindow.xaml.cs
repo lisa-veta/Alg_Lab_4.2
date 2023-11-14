@@ -21,6 +21,13 @@ namespace HardLab5
             DataContext = new MainViewModel();
         }
 
+        public MainViewModel MainViewModel
+        {
+            get => default;
+            set
+            {
+            }
+        }
     }
 
 }
