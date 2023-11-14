@@ -173,6 +173,7 @@ namespace HardLab5.ViewModels
                     StartDirectMerger();
                     break;
                 case "естественное слияние":
+                    StartNatureMerger();
                     break;
                 case "трехпутевое слияние":
                     StartMerger();
@@ -487,6 +488,161 @@ namespace HardLab5.ViewModels
             return false;
         }
 
+        private void StartNatureMerger()
+        {
+            _iterations = 1;
+            _segments = 1;
+            DataTable dataTable = new DataTable();
+            foreach (Column column in keyTable.Key.Columns)
+            {
+                dataTable.Columns.Add(column.Name);
+            }
+            DataTableA.Rows.Clear();
+            DataTableA = dataTable;
+            DataTable dataTable1 = new DataTable();
+            foreach (Column column in keyTable.Key.Columns)
+            {
+                dataTable1.Columns.Add(column.Name);
+            }
+            DataTableB.Rows.Clear();
+            DataTableB = dataTable1;
+            NativeOuterSort();
+        }
+
+        //iterations - сколько элементов должно быть в каждом сегменте данных
+        private List<int> _series = new List<int>();
+
+        async void NativeOuterSort()
+        {
+            IsEnable = false;
+            while (true)
+            {
+                _segments = 1;
+                DataRow prev = DataNewTable.Rows[0];
+                bool flag = true;
+                bool flagf = true;
+                AddRowInTable(prev, DataTableA);
+                int counter = 0;
+                foreach (DataRow cur in DataNewTable.Rows)
+                {
+                    if (flagf)
+                    {
+                        flagf = false;
+                        continue;
+                    }
+                    DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
+                    string tempA = string.Format("{0}", prev[myColunm.ToString()]);
+                    string tempB = string.Format("{0}", cur[myColunm.ToString()]);
+                    if (CompareDifferentTypes(tempB, tempA))
+                    {
+                        flag = !flag;
+                        _segments++;
+                        _series.Add(counter + 1);
+                        counter = 0;
+                    }
+                    if (flag)
+                    {
+                        AddRowInTable(cur, DataTableA);
+                        await Task.Delay(1010 - Slider);
+                        counter++;
+                    }
+                    else
+                    {
+                        AddRowInTable(cur, DataTableB);
+                        await Task.Delay(1010 - Slider);
+                        counter++;
+                    }
+                    prev = cur;
+                }
+
+                if (_segments == 1)
+                {
+                    break;
+                }
+
+                DataNewTable.Rows.Clear();
+                DataRow newRowA = DataNewTable.NewRow();
+                DataRow newRowB = DataNewTable.NewRow();
+                DataRow newRowC = DataNewTable.NewRow();
+
+                bool pickedA = false, pickedB = false;
+                int positionA = 0, positionB = 0;
+                int seriaA = 0; int seriaB = 0;
+                int indA = 0; int indB = 1;
+                while (positionA != DataTableA.Rows.Count || positionB != DataTableB.Rows.Count || pickedA || pickedB)
+                {
+                    if (positionA != DataTableA.Rows.Count)
+                    {
+                        if (_series[indA] != seriaA && !pickedA)
+                        {
+                            newRowA = DataTableA.Rows[positionA];
+                            pickedA = true;
+                            positionA += 1;
+                        }
+                        if (_series[indA] == seriaA && indA <= _series.Count - 1)
+                        {
+                            pickedA = false;
+                            indA += 2;
+                            seriaA = 0;
+                        }
+                    }
+                    if (positionB != DataTableB.Rows.Count)
+                    {
+                        if (_series[indB] != seriaB && !pickedB)
+                        {
+                            newRowB = DataTableB.Rows[positionB];
+                            pickedB = true;
+                            positionB += 1;
+                        }
+                        if (_series[indB] == seriaB && indB <= _series.Count - 1)
+                        {
+                            pickedB = false;
+                            indB += 2;
+                            seriaB = 0;
+                        }
+                    }
+                    DataColumn myColumn = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
+                    string tempA = string.Format("{0}", newRowA[myColumn.ToString()]);
+                    string tempB = string.Format("{0}", newRowB[myColumn.ToString()]);
+                    string tempC = string.Format("{0}", newRowC[myColumn.ToString()]);
+                    if (pickedA)
+                    {
+                        if (pickedB)
+                        {
+                            if (CompareDifferentTypes(tempA, tempB))
+                            {
+                                AddRowInTable(newRowA, DataNewTable);
+                                pickedA = false;
+                                await Task.Delay(1010 - Slider);
+                            }
+                            else
+                            {
+                                AddRowInTable(newRowB, DataNewTable);
+                                pickedB = false;
+                                await Task.Delay(1010 - Slider);
+                            }
+                        }
+                        else
+                        {
+                            AddRowInTable(newRowA, DataNewTable);
+                            pickedA = false;
+                            await Task.Delay(1010 - Slider);
+                        }
+                    }
+                    else if (pickedB)
+                    {
+                        AddRowInTable(newRowB, DataNewTable);
+                        pickedB = false;
+                        await Task.Delay(1010 - Slider);
+                    }
+                }
+                DataTableA.Rows.Clear();
+                DataTableB.Rows.Clear();
+            }
+            IsEnable = true;
+            ChangeMainTable();
+            FileRewriter.RewriteCSV(folderPath, selectedTable, selectedScheme);
+        }
 
         async void DoThreeWaySort()
         {
@@ -782,46 +938,6 @@ namespace HardLab5.ViewModels
             IsEnable = true;
             ChangeMainTable();
             FileRewriter.RewriteCSV(folderPath, selectedTable, selectedScheme);
-        }
-
-        public AlgorithmSort AlgorithmSort
-        {
-            get => default;
-            set
-            {
-            }
-        }
-
-        internal DelegateCommand DelegateCommand
-        {
-            get => default;
-            set
-            {
-            }
-        }
-
-        public FileRewriter FileRewriter
-        {
-            get => default;
-            set
-            {
-            }
-        }
-
-        public Table Table
-        {
-            get => default;
-            set
-            {
-            }
-        }
-
-        public TableScheme TableScheme
-        {
-            get => default;
-            set
-            {
-            }
         }
     }
 }
