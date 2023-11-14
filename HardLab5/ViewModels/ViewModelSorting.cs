@@ -517,11 +517,95 @@ namespace HardLab5.ViewModels
                     }
                     prev = cur;
                 }
+
+                if (_segments == 1)
+                {
+                    break;
+                }
+
+                DataNewTable.Rows.Clear();
+                DataRow newRowA = DataNewTable.NewRow();
+                DataRow newRowB = DataNewTable.NewRow();
+                DataRow newRowC = DataNewTable.NewRow();
+
+                string elementA = null, elementB = null;
+                bool pickedA = false, pickedB = false;
+                int positionA = 0, positionB = 0;
+                int seriaA = 0; int seriaB = 0;
+                int indA = 0; int indB = 1;
+                while (positionA != DataTableA.Rows.Count || positionB != DataTableB.Rows.Count || pickedA || pickedB)
+                {
+                    if (positionA != DataTableA.Rows.Count)
+                    {
+                        if (_series[indA] != seriaA && !pickedA)
+                        {
+                            newRowA = DataTableA.Rows[positionA];
+                            pickedA = true;
+                            positionA += 1;
+                        }
+                        if (_series[indA] == seriaA && indA <= _series.Count - 1)
+                        {
+                            pickedA = false;
+                            indA += 2;
+                            seriaA = 0;
+                        }
+                    }
+                    if (positionB != DataTableB.Rows.Count)
+                    {
+                        if (_series[indB] != seriaB && !pickedB)
+                        {
+                            newRowB = DataTableB.Rows[positionB];
+                            pickedB = true;
+                            positionB += 1;
+                        }
+                        if (_series[indB] == seriaB && indB <= _series.Count - 1)
+                        {
+                            pickedB = false;
+                            indB += 2;
+                            seriaB = 0;
+                        }
+                    }
+                    DataColumn myColumn = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
+                    string tempA = string.Format("{0}", newRowA[myColumn.ToString()]);
+                    string tempB = string.Format("{0}", newRowB[myColumn.ToString()]);
+                    string tempC = string.Format("{0}", newRowC[myColumn.ToString()]);
+                    if (pickedA)
+                    {
+                        if (pickedB)
+                        {
+                            if (CompareDifferentTypes(tempA, tempB))
+                            {
+                                AddRowInTable(newRowA, DataNewTable);
+                                pickedA = false;
+                                await Task.Delay(1010 - Slider);
+                            }
+                            else
+                            {
+                                AddRowInTable(newRowB, DataNewTable);
+                                pickedB = false;
+                                await Task.Delay(1010 - Slider);
+                            }
+                        }
+                        else
+                        {
+                            AddRowInTable(newRowA, DataNewTable);
+                            pickedA = false;
+                            await Task.Delay(1010 - Slider);
+                        }
+                    }
+                    else if (pickedB)
+                    {
+                        AddRowInTable(newRowB, DataNewTable);
+                        pickedB = false;
+                        await Task.Delay(1010 - Slider);
+                    }
+                }
+                DataTableA.Rows.Clear();
+                DataTableB.Rows.Clear();
             }
+
             IsEnable = true;
-
         }
-
         //async void NativeOuterSort()
         //{
         //    IsEnable = false;
