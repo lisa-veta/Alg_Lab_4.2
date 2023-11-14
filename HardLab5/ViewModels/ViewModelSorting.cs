@@ -15,6 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup.Localizer;
 using System.Xml.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace HardLab5.ViewModels
 {
@@ -479,103 +480,150 @@ namespace HardLab5.ViewModels
             IsEnable = false;
             while (true)
             {
+                _segments = 1;
+                DataRow prev = DataNewTable.Rows[0];
                 bool flag = true;
-                int counter = 0; //элементы в серии
-                DataColumn myColumn = DataNewTable.Columns.Cast<DataColumn>()
-                    .SingleOrDefault(col => col.ColumnName == SelectedColumn);
-                for (int i = 0; i < DataNewTable.Rows.Count - 1; i++)
+                bool flagf = true;
+                AddRowInTable(prev, DataTableA);
+                int counter = 0;
+                foreach (DataRow cur in DataNewTable.Rows)
                 {
-                    var tempFlag = flag;
-                    DataRow row1 = DataNewTable.Rows[i];
-                    DataRow row2 = DataNewTable.Rows[i + 1];
-                    string line1 = string.Format("{0}", row1[myColumn.ToString()]);
-                    string line2 = string.Format("{0}", row2[myColumn.ToString()]);
-                    if (CompareDifferentTypes(line1, line2)) //если 1<2 true
+                    if (flagf)
                     {
+                        flagf = false;
+                        continue;
+                    }
+                    DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
+                    string tempA = string.Format("{0}", prev[myColunm.ToString()]);
+                    string tempB = string.Format("{0}", cur[myColunm.ToString()]);
+                    if (CompareDifferentTypes(tempB, tempA))
+                    {
+                        flag = !flag;
+                        _segments++;
+                        _series.Add(counter + 1);
+                        counter = 0;
+                    }
+                    if (flag)
+                    {
+                        AddRowInTable(cur, DataTableA);
+                        await Task.Delay(1010 - Slider);
                         counter++;
                     }
                     else
                     {
-                        tempFlag = !tempFlag;
-                        _series.Add(counter + 1);
-                        counter = 0;
+                        AddRowInTable(cur, DataTableB);
+                        await Task.Delay(1010 - Slider);
+                        counter++;
                     }
-
-                    if (flag)
-                    {
-                        AddRowInTable(row1, DataTableA);
-                    }
-                    else
-                    {
-                        AddRowInTable(row1, DataTableB);
-                    }
-
-                    flag = tempFlag;
-                }
-                _series.Add(counter + 1); //распределение по таблицам завершено
-
-                //слияние таблиц
-                DataNewTable.Rows.Clear();
-                DataRow newRowA = DataTableA.NewRow();
-                DataRow newRowB = DataTableB.NewRow();
-
-                var indexA = 0;
-                var indexB = 1;
-                var counterA = 0;
-                var counterB = 0;
-                int indForA = 0;
-                int indForB = 0;
-
-                newRowA = DataTableA.Rows[indForA]; //строка из а
-                newRowB = DataTableB.Rows[indForB]; //строка из б
-                string elementA = string.Format("{0}", newRowA[myColumn.ToString()]);
-                string elementB = string.Format("{0}", newRowB[myColumn.ToString()]);
-
-                while (DataTableA.Rows[indForA] != null || DataTableB.Rows[indForB] != null)
-                {
-                    if (counterA == _series[indexA] && counterB == _series[indexB])
-                    {
-                        counterA = 0;
-                        counterB = 0;
-                        indexA += 2;
-                        indexB += 2;
-                        continue;
-                    }
-
-                    if (indexA == _series.Count || counterA == _series[indexA])
-                    {
-                        newRowB = DataTableB.Rows[indForB];
-                        AddRowInTable(newRowB, DataNewTable);
-                        indForB++;
-                        counterB++;
-                        continue;
-                    }
-
-                    if (indexB == _series.Count || counterB == _series[indexB])
-                    {
-                        newRowA = DataTableA.Rows[indForA];
-                        AddRowInTable(newRowA, DataNewTable);
-                        indForA++;
-                        counterA++;
-                        continue;
-                    }
-
-                    if (CompareDifferentTypes(elementA, elementB))
-                    {
-                        newRowA = DataTableA.Rows[indForA];
-                        AddRowInTable(newRowA, DataNewTable);
-                        indForA++;
-                        counterA++;
-                    }
-                    else
-                    {
-                        newRowB = DataTableB.Rows[indForB];
-                        AddRowInTable(newRowB, DataNewTable);
-                        indForB++;
-                        counterB++;
-                    }
+                    prev = cur;
                 }
             }
+            IsEnable = true;
+
         }
+
+        //async void NativeOuterSort()
+        //{
+        //    IsEnable = false;
+        //    while (true)
+        //    {
+        //        bool flag = true;
+        //        int counter = 0; //элементы в серии
+        //        DataColumn myColumn = DataNewTable.Columns.Cast<DataColumn>()
+        //            .SingleOrDefault(col => col.ColumnName == SelectedColumn);
+        //        for (int i = 0; i < DataNewTable.Rows.Count - 1; i++)
+        //        {
+        //            var tempFlag = flag;
+        //            DataRow row1 = DataNewTable.Rows[i];
+        //            DataRow row2 = DataNewTable.Rows[i + 1];
+        //            string line1 = string.Format("{0}", row1[myColumn.ToString()]);
+        //            string line2 = string.Format("{0}", row2[myColumn.ToString()]);
+        //            if (CompareDifferentTypes(line1, line2)) //если 1<2 true
+        //            {
+        //                counter++;
+        //            }
+        //            else
+        //            {
+        //                tempFlag = !tempFlag;
+        //                _series.Add(counter + 1);
+        //                counter = 0;
+        //            }
+
+        //            if (flag)
+        //            {
+        //                AddRowInTable(row1, DataTableA);
+        //            }
+        //            else
+        //            {
+        //                AddRowInTable(row1, DataTableB);
+        //            }
+
+        //            flag = tempFlag;
+        //        }
+        //        _series.Add(counter + 1); //распределение по таблицам завершено
+
+        //        //слияние таблиц
+        //        DataNewTable.Rows.Clear();
+        //        DataRow newRowA = DataTableA.NewRow();
+        //        DataRow newRowB = DataTableB.NewRow();
+
+        //        var indexA = 0;
+        //        var indexB = 1;
+        //        var counterA = 0;
+        //        var counterB = 0;
+        //        int indForA = 0;
+        //        int indForB = 0;
+
+        //        newRowA = DataTableA.Rows[indForA]; //строка из а
+        //        newRowB = DataTableB.Rows[indForB]; //строка из б
+        //        string elementA = string.Format("{0}", newRowA[myColumn.ToString()]);
+        //        string elementB = string.Format("{0}", newRowB[myColumn.ToString()]);
+
+        //        while (DataTableA.Rows[indForA] != null || DataTableB.Rows[indForB] != null)
+        //        {
+        //            if (counterA == _series[indexA] && counterB == _series[indexB])
+        //            {
+        //                counterA = 0;
+        //                counterB = 0;
+        //                indexA += 2;
+        //                indexB += 2;
+        //                continue;
+        //            }
+
+        //            if (indexA == _series.Count || counterA == _series[indexA])
+        //            {
+        //                newRowB = DataTableB.Rows[indForB];
+        //                AddRowInTable(newRowB, DataNewTable);
+        //                indForB++;
+        //                counterB++;
+        //                continue;
+        //            }
+
+        //            if (indexB == _series.Count || counterB == _series[indexB])
+        //            {
+        //                newRowA = DataTableA.Rows[indForA];
+        //                AddRowInTable(newRowA, DataNewTable);
+        //                indForA++;
+        //                counterA++;
+        //                continue;
+        //            }
+
+        //            if (CompareDifferentTypes(elementA, elementB))
+        //            {
+        //                newRowA = DataTableA.Rows[indForA];
+        //                AddRowInTable(newRowA, DataNewTable);
+        //                indForA++;
+        //                counterA++;
+        //            }
+        //            else
+        //            {
+        //                newRowB = DataTableB.Rows[indForB];
+        //                AddRowInTable(newRowB, DataNewTable);
+        //                indForB++;
+        //                counterB++;
+        //            }
+        //        }
+        //    }
+        //}
     }
 }
