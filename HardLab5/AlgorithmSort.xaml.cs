@@ -24,5 +24,13 @@ namespace HardLab5
         {
             InitializeComponent();
         }
+
+        public ViewModelSorting ViewModelSorting
+        {
+            get => default;
+            set
+            {
+            }
+        }
     }
 }
