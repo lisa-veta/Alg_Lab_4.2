@@ -509,11 +509,11 @@ namespace HardLab5.ViewModels
             NativeOuterSort();
         }
 
-        //iterations - сколько элементов должно быть в каждом сегменте данных
         private List<int> _series = new List<int>();
 
         async void NativeOuterSort()
         {
+            Movements.Add("Внешняя сортировка - естественное слияние");
             IsEnable = false;
             while (true)
             {
@@ -521,6 +521,8 @@ namespace HardLab5.ViewModels
                 DataRow prev = DataNewTable.Rows[0];
                 bool flag = true;
                 bool flagf = true;
+                Movements.Add("\nФайл разделяется на 2 вспомогательных,\nразделяя основной файл на серии\n"+
+                              "(уже отсортированные подмассивы).\nНечетные серии в таблицу А, нечётные - B\n");
                 AddRowInTable(prev, DataTableA);
                 int counter = 0;
                 foreach (DataRow cur in DataNewTable.Rows)
@@ -535,6 +537,7 @@ namespace HardLab5.ViewModels
                     string tempB = string.Format("{0}", cur[myColunm.ToString()]);
                     if (CompareDifferentTypes(tempB, tempA))
                     {
+                        Movements.Add($"\nЭлемент {tempA} > {tempB}\nНачинается новая серия элементов.\n");
                         flag = !flag;
                         _segments++;
                         _series.Add(counter + 1);
@@ -542,12 +545,16 @@ namespace HardLab5.ViewModels
                     }
                     if (flag)
                     {
+                        Movements.Add($"Добавление строки под номером {DataNewTable.Rows.IndexOf(cur)} в таблицу А\n"+
+                                      "Продолжается серия элементов");
                         AddRowInTable(cur, DataTableA);
                         await Task.Delay(1010 - Slider);
                         counter++;
                     }
                     else
                     {
+                        Movements.Add($"Добавление строки под номером {DataNewTable.Rows.IndexOf(cur)} в таблицу B\n"+
+                                      "Продолжается серия элементов");
                         AddRowInTable(cur, DataTableB);
                         await Task.Delay(1010 - Slider);
                         counter++;
@@ -557,13 +564,13 @@ namespace HardLab5.ViewModels
 
                 if (_segments == 1)
                 {
+                    Movements.Add("\nПосле разделения на файлы остался один сегмент\n(одна серия), значит сортировка закончена\n");
                     break;
                 }
 
                 DataNewTable.Rows.Clear();
                 DataRow newRowA = DataNewTable.NewRow();
                 DataRow newRowB = DataNewTable.NewRow();
-                DataRow newRowC = DataNewTable.NewRow();
 
                 bool pickedA = false, pickedB = false;
                 int positionA = 0, positionB = 0;
@@ -604,19 +611,20 @@ namespace HardLab5.ViewModels
                     DataColumn myColumn = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
                     string tempA = string.Format("{0}", newRowA[myColumn.ToString()]);
                     string tempB = string.Format("{0}", newRowB[myColumn.ToString()]);
-                    string tempC = string.Format("{0}", newRowC[myColumn.ToString()]);
                     if (pickedA)
                     {
                         if (pickedB)
                         {
                             if (CompareDifferentTypes(tempA, tempB))
                             {
+                                Movements.Add($"Элемент {tempB} > {tempA}, добавляем {tempA} в основную таблицу.");
                                 AddRowInTable(newRowA, DataNewTable);
                                 pickedA = false;
                                 await Task.Delay(1010 - Slider);
                             }
                             else
                             {
+                                Movements.Add($"Элемент {tempB} < {tempA}, добавляем {tempB} в основную таблицу.");
                                 AddRowInTable(newRowB, DataNewTable);
                                 pickedB = false;
                                 await Task.Delay(1010 - Slider);
@@ -624,6 +632,7 @@ namespace HardLab5.ViewModels
                         }
                         else
                         {
+                            Movements.Add($"Добавление элемента {tempA} в основную таблицу. ");
                             AddRowInTable(newRowA, DataNewTable);
                             pickedA = false;
                             await Task.Delay(1010 - Slider);
@@ -631,6 +640,7 @@ namespace HardLab5.ViewModels
                     }
                     else if (pickedB)
                     {
+                        Movements.Add($"Добавление элемента {tempB} в основную таблицу");
                         AddRowInTable(newRowB, DataNewTable);
                         pickedB = false;
                         await Task.Delay(1010 - Slider);
