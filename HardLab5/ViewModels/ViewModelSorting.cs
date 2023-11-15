@@ -83,6 +83,8 @@ namespace HardLab5.ViewModels
             }
         }
 
+        private List<int> _seriesA = new List<int>();
+        public List<int> _seriesB = new List<int>();
         public DataGrid DataGrid { get; set; }
         public DataGrid DataGrid1 { get; set; }
         public DataGrid DataGrid2 { get; set; }
@@ -259,6 +261,7 @@ namespace HardLab5.ViewModels
        
         async void DirectSort()
         {
+            _series.Clear();
             Movements.Add("Внешняя сортировка: прямое слияние");
             IsEnable = false;
             while (true)
@@ -274,6 +277,7 @@ namespace HardLab5.ViewModels
                     if (counter == _iterations)
                     {
                         flag = !flag;
+                        _series.Add(counter + 1);
                         counter = 0;
                         _segments++;
                     }
@@ -312,6 +316,8 @@ namespace HardLab5.ViewModels
                 int positionB = 0;
                 int currentPA = 0;
                 int currentPB = _iterations;
+                int seriaA = 0; int seriaB = 0;
+                int indA = 0; int indB = 1;
                 for(int i = 0; i < 1000; i++)
                 {
                     if (endA && endB)
@@ -506,7 +512,7 @@ namespace HardLab5.ViewModels
             }
             DataTableB.Rows.Clear();
             DataTableB = dataTable1;
-            NativeOuterSort();
+            NativeOuterSort2();
         }
 
         private List<int> _series = new List<int>();
@@ -561,6 +567,7 @@ namespace HardLab5.ViewModels
                     }
                     prev = cur;
                 }
+
 
                 if (_segments == 1)
                 {
@@ -654,6 +661,219 @@ namespace HardLab5.ViewModels
             FileRewriter.RewriteCSV(folderPath, selectedTable, selectedScheme);
         }
 
+        async void NativeOuterSort2()
+        {
+            Movements.Add("Внешняя сортировка - естественное слияние");
+            IsEnable = false;
+            while (true)
+            {
+                _segments = 1;
+                DataRow prev = DataNewTable.Rows[0];
+                bool flag = true;
+                bool flagf = true;
+                Movements.Add("\nФайл разделяется на 2 вспомогательных,\nразделяя основной файл на серии\n" +
+                              "(уже отсортированные подмассивы).\nНечетные серии в таблицу А, нечётные - B\n");
+                AddRowInTable(prev, DataTableA);
+                int counter = 0;
+                foreach (DataRow cur in DataNewTable.Rows)
+                {
+                    if (flagf)
+                    {
+                        flagf = false;
+                        continue;
+                    }
+                    DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
+                    string tempA = string.Format("{0}", prev[myColunm.ToString()]);
+                    string tempB = string.Format("{0}", cur[myColunm.ToString()]);
+                    if (CompareDifferentTypes(tempB, tempA))
+                    {
+                        Movements.Add($"\nЭлемент {tempA} > {tempB}\nНачинается новая серия элементов.\n");
+                        flag = !flag;
+                        _segments++;
+                        _series.Add(counter + 1);
+                        counter = 0;
+                    }
+                    if (flag)
+                    {
+                        Movements.Add($"Добавление строки под номером {DataNewTable.Rows.IndexOf(cur)} в таблицу А\n" +
+                                      "Продолжается серия элементов");
+                        AddRowInTable(cur, DataTableA);
+                        await Task.Delay(1010 - Slider);
+                        counter++;
+                    }
+                    else
+                    {
+                        Movements.Add($"Добавление строки под номером {DataNewTable.Rows.IndexOf(cur)} в таблицу B\n" +
+                                      "Продолжается серия элементов");
+                        AddRowInTable(cur, DataTableB);
+                        await Task.Delay(1010 - Slider);
+                        counter++;
+                    }
+                    prev = cur;
+                }
+
+
+                if (_segments == 1)
+                {
+                    Movements.Add("\nПосле разделения на файлы остался один сегмент\n(одна серия), значит сортировка закончена\n");
+                    break;
+                }
+          
+                DataNewTable.Rows.Clear();
+                DataRow newRowA = DataNewTable.NewRow();
+                DataRow newRowB = DataNewTable.NewRow();
+                SetNewSeries(DataTableA, _seriesA);
+                SetNewSeries(DataTableB, _seriesB);
+
+                bool pickedA = false, pickedB = false;
+                int positionA = 0, positionB = 0;
+                int seriaA = _seriesA[0]; int seriaB = _seriesB[0];
+                int indA = 0; int indB = 0;
+                bool endA = false; bool endB = false;
+                Movements.Add("\nНачинаем слияние в файл\n");
+                while (true)
+                {
+                    if (endA && endB)
+                    {
+                        break;
+                    }
+
+                    if (seriaA == 0 && seriaB == 0)
+                    {
+                        indA++; indB++;
+                        if (indA <= _seriesA.Count - 1)
+                        {
+                            seriaA = _seriesA[indA];
+                        }
+                        if (indB <= _seriesB.Count - 1)
+                        {
+                            seriaB = _seriesB[indB];
+                        }
+                    }
+
+                    if (positionA != DataTableA.Rows.Count)
+                    {
+                        if (seriaA > 0)
+                        {
+                            if (!pickedA)
+                            {
+                                newRowA = DataTableA.Rows[positionA];
+                                positionA += 1;
+                                pickedA = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        endA = true;
+                    }
+
+                    if (positionB != DataTableB.Rows.Count)
+                    {
+                        if (seriaB > 0)
+                        {
+                            if (!pickedB)
+                            {
+                                newRowB = DataTableB.Rows[positionB];
+                                positionB += 1;
+                                pickedB = true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        endB = true;
+                    }
+
+                    if (endA && endB && pickedA == false && pickedB == false)
+                    {
+                        break;
+                    }
+                    DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
+                    string tempA = string.Format("{0}", newRowA[myColunm.ToString()]);
+                    string tempB = string.Format("{0}", newRowB[myColunm.ToString()]);
+                    if (pickedA)
+                    {
+                        if (pickedB)
+                        {
+                            if (CompareDifferentTypes(tempA, tempB))
+                            {
+                                Movements.Add($"Элемент {tempB} > {tempA}, добавляем {tempA} в основную таблицу.");
+                                AddRowInTable(newRowA, DataNewTable);
+                                pickedA = false;
+                                seriaA--;
+                                await Task.Delay(1010 - Slider);
+                            }
+                            else
+                            {
+                                Movements.Add($"Элемент {tempA} > {tempB}, добавляем {tempB} в основную таблицу.");
+                                AddRowInTable(newRowB, DataNewTable);
+                                pickedB = false;
+                                seriaB--;
+                                await Task.Delay(1010 - Slider);
+                            }
+                        }
+                        else
+                        {
+                            Movements.Add($"Добавляем {tempA} в основную таблицу.");
+                            AddRowInTable(newRowA, DataNewTable);
+                            pickedA = false;
+                            seriaA--;
+                            await Task.Delay(1010 - Slider);
+                        }
+                    }
+                    else if (pickedB)
+                    {
+                        Movements.Add($"Добавляем {tempB} в основную таблицу.");
+                        AddRowInTable(newRowB, DataNewTable);
+                        pickedB = false;
+                        seriaB--;
+                        await Task.Delay(1010 - Slider);
+                    }
+                }
+                DataTableA.Rows.Clear();
+                DataTableB.Rows.Clear();
+            }
+            IsEnable = true;
+            ChangeMainTable();
+            FileRewriter.RewriteCSV(folderPath, selectedTable, selectedScheme);
+        }
+
+        private void SetNewSeries(DataTable dataTable, List<int> series)
+        {
+            series.Clear();
+            int columnNumber = 0;
+            foreach(Column column in keyTable.Key.Columns)
+            {
+                if(column.Name == SelectedColumn) break;               
+                columnNumber++;
+            }
+            string prev = dataTable.Rows[0][columnNumber].ToString();
+            string cur;
+            int count = 0;
+            for (int i = 1; i < dataTable.Rows.Count; i++)
+            {
+                cur = dataTable.Rows[i][columnNumber].ToString();
+                if (CompareDifferentTypes(cur, prev))
+                {
+                    series.Add(count + 1);
+                    count = 0;
+                    prev = cur;
+                    if (i == dataTable.Rows.Count - 1)
+                    {
+                        series.Add(count + 1);
+                    }
+                    continue;
+                }
+                count++;
+                if (i == dataTable.Rows.Count - 1)
+                {
+                    series.Add(count + 1);
+                }
+                prev = cur;
+            }
+        }
+
         async void DoThreeWaySort()
         {
             Movements.Add("Внешняя сортировка: трехпутевое слияние");
@@ -662,6 +882,8 @@ namespace HardLab5.ViewModels
             {
                 _segments = 1;
                 bool flag = true;
+                int counter = 0;
+                int mainTable = 1;
                 Movements.Add("\nДелим данные на два вспомогательных файла,\n" +
                     "сравнивая предыдущий с текущим чтобы в файлах\nэлементы были от меньшего к большему\n" +
                     "для последующего корректного сравнения");
@@ -940,7 +1162,7 @@ namespace HardLab5.ViewModels
                     currentPB += positionB;
                     currentPC += positionC;
                 }
-                _iterations *= 2; // увеличиваем размер серии в 2 раза
+                _iterations *= 2;
                 DataTableA.Rows.Clear();
                 DataTableB.Rows.Clear();
                 DataTableС.Rows.Clear();
