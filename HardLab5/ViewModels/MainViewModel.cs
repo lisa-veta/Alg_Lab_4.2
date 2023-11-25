@@ -182,6 +182,7 @@ namespace HardLab5
         public void TableSelected(object sender, RoutedEventArgs e)
         {
             ((MainWindow)System.Windows.Application.Current.MainWindow).DataGrid.Columns.Clear();
+            
             tableName = ((TreeViewItem)sender).Header.ToString().Replace(".csv", "");
             DataTable dataTable = new DataTable();
             foreach (var keyTable in keyTables)
@@ -193,6 +194,7 @@ namespace HardLab5
                 }
             }
             DataCurrentTable = dataTable;
+           ((MainWindow)System.Windows.Application.Current.MainWindow).DataGrid.Columns[0].Visibility = Visibility.Collapsed;
         }
 
         private DataTable GreateDataTable(KeyValuePair<TableScheme, Table> keyTable, DataTable dataTable)
@@ -340,44 +342,6 @@ namespace HardLab5
             }
         });
 
-        public MainWindow MainWindow
-        {
-            get => default;
-            set
-            {
-            }
-        }
-
-        internal DelegateCommand DelegateCommand
-        {
-            get => default;
-            set
-            {
-            }
-        }
-
-        public FileRewriter FileRewriter
-        {
-            get => default;
-            set
-            {
-            }
-        }
-
-        public Table Table
-        {
-            get => default;
-            set
-            {
-            }
-        }
-
-        public TableScheme TableScheme
-        {
-            get => default;
-            set
-            {
-            }
-        }
+        
     }
 }

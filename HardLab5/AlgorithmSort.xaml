@@ -3,7 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:HardLab5"
+        xmlns:local="clr-namespace:HardLab5" 
+        xmlns:viewmodels="clr-namespace:HardLab5.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:ViewModelSorting}"
+        xmlns:models="clr-namespace:HardLab5.Models" 
         mc:Ignorable="d"
         Title="AlgorithmSort" Height="650" Width="1100">
     <Grid>
@@ -44,13 +46,41 @@
             <ItemsControl Foreground="Black" ItemsSource="{Binding Movements}"></ItemsControl>
         </ScrollViewer>
         <DataGrid Name="DataNewGrid"  Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True" ItemsSource="{Binding DataNewTable}"  CanUserAddRows="False" 
-                  RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="8"/>
+                  Grid.ColumnSpan="8">
+            <DataGrid.Resources>
+                <models:RowToBrushConverter x:Key="RowToBrushConverter"/>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Setter Property="Background" Value="{Binding Converter={StaticResource RowToBrushConverter}}"></Setter>
+                </Style>
+            </DataGrid.Resources>
+        </DataGrid>
         <DataGrid Name="DataGrid1"  Grid.Column="3" Grid.Row="5"  AutoGenerateColumns="True" ItemsSource="{Binding DataTableA}"  CanUserAddRows="False" 
-                  RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="2"/>
-        <DataGrid Name="DataGrid2"  Grid.Column="5" Grid.Row="5"  AutoGenerateColumns="True" ItemsSource="{Binding DataTableB}"  CanUserAddRows="False" 
-                  RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="4"/>
+                  Grid.ColumnSpan="2">
+            <DataGrid.Resources>
+                <models:RowToBrushConverter x:Key="RowToBrushConverter"/>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Setter Property="Background" Value="{Binding Converter={StaticResource RowToBrushConverter}}"></Setter>
+                </Style>
+            </DataGrid.Resources>
+        </DataGrid>
+        <DataGrid Name="DataGrid2"  Grid.Column="5" Grid.Row="5"  AutoGenerateColumns="True" ItemsSource="{Binding DataTableB}" SelectedItem="{Binding ItemB}" CanUserAddRows="False" 
+                  Grid.ColumnSpan="4">
+            <DataGrid.Resources>
+                <models:RowToBrushConverter x:Key="RowToBrushConverter"/>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Setter Property="Background" Value="{Binding Converter={StaticResource RowToBrushConverter}}"></Setter>
+                </Style>
+            </DataGrid.Resources>
+        </DataGrid>
         <DataGrid Name="DataGrid3"  Grid.Column="9" Grid.Row="5"  AutoGenerateColumns="True" ItemsSource="{Binding DataTableС}"  CanUserAddRows="False" 
-                  RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="2"/>
+                  Grid.ColumnSpan="2">
+            <DataGrid.Resources>
+                <models:RowToBrushConverter x:Key="RowToBrushConverter"/>
+                <Style TargetType="{x:Type DataGridRow}">
+                    <Setter Property="Background" Value="{Binding Converter={StaticResource RowToBrushConverter}}"></Setter>
+                </Style>
+            </DataGrid.Resources>
+        </DataGrid>
 
         <Button x:Name="Edit" IsEnabled="{Binding IsEnable}" Command="{Binding  Start}" Grid.Column="10" Grid.Row="7"  Background="DarkSeaGreen">
             <Button.Content>

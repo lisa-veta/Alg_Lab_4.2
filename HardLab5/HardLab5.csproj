@@ -88,7 +88,10 @@
       <DependentUpon>AlgorithmSort.xaml</DependentUpon>
     </Compile>
     <Compile Include="DelegateCommand.cs" />
+    <Compile Include="Models\ConverterBase.cs" />
     <Compile Include="Models\DirectMerger.cs" />
+    <Compile Include="Models\ListRows.cs" />
+    <Compile Include="Models\RowToBrushConverter.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="Models\ColumnAdder.cs" />
     <Compile Include="Models\ElementRemover.cs" />

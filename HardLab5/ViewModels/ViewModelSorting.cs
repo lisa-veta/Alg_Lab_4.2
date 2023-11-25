@@ -5,6 +5,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
+using System.Data.Common;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,8 +15,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Markup.Localizer;
+using System.Windows.Media;
 using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
@@ -27,6 +32,7 @@ namespace HardLab5.ViewModels
         private List<string> _sortingAlgorithms = new List<string> { "прямое слияние", "естественное слияние", "трехпутевое слияние" };
         public ObservableCollection<string> Movements { get; set; } = new ObservableCollection<string>();
 
+       
         public List<string> ListOfSorts
         {
             get { return _sortingAlgorithms; }
@@ -47,6 +53,7 @@ namespace HardLab5.ViewModels
                 OnPropertyChanged();
             }
         }
+
 
         public string folderPath;
 
@@ -90,6 +97,7 @@ namespace HardLab5.ViewModels
         public DataGrid DataGrid2 { get; set; }
         public DataGrid DataGrid3 { get; set; }
 
+       
         public TableScheme selectedScheme;
         public Table selectedTable;
 
@@ -152,6 +160,7 @@ namespace HardLab5.ViewModels
 
         public ICommand Start => new DelegateCommand(param =>
         {
+            DataGrid.Columns[0].Visibility = Visibility.Collapsed;
             Movements.Clear();
             if (CheckChooses()) return;
             StartWork();
@@ -225,6 +234,7 @@ namespace HardLab5.ViewModels
             }
             DataTableA.Rows.Clear();
             DataTableA = dataTable;
+            DataGrid1.Columns[0].Visibility = Visibility.Collapsed;
             DataTable dataTable1 = new DataTable();
             foreach (Column column in keyTable.Key.Columns)
             {
@@ -232,6 +242,7 @@ namespace HardLab5.ViewModels
             }
             DataTableB.Rows.Clear();
             DataTableB = dataTable1;
+            DataGrid2.Columns[0].Visibility = Visibility.Collapsed;
             //DirectMerger directMerger = new DirectMerger(IsEnable, Slider);
             //directMerger.Sort(SelectedColumn, _segments, _iterations, DataNewTable, DataTableA, DataTableB, keyTable);
             DirectSort();
@@ -254,9 +265,32 @@ namespace HardLab5.ViewModels
             }
         }
 
-        private void AddRowInTable(DataRow newRow, DataTable dataTable)
+        private void ChangeTable(DataTable dataTable, int position, string log)
+        {
+            DataTable temp = new DataTable();
+            foreach(Column column in keyTable.Key.Columns)
+            {
+                temp.Columns.Add(column.Name);
+            }
+            foreach (DataRow row in dataTable.Rows)
+            {
+                temp.Rows.Add(row.ItemArray);
+            }
+            temp.Rows[position]["Hidden"] = log;
+            dataTable.Rows.Clear();
+            foreach (DataRow row in temp.Rows)
+            {
+                dataTable.Rows.Add(row.ItemArray);
+            }
+        }
+
+        private void AddRowInTable(DataRow newRow, DataTable dataTable, string flag = null)
         {
             dataTable.Rows.Add(newRow.ItemArray);
+            if(flag != null)
+            {
+                dataTable.Rows[dataTable.Rows.Count - 1]["Hidden"] = flag;
+            }
         }
        
         async void DirectSort()
@@ -270,6 +304,8 @@ namespace HardLab5.ViewModels
                 int counter = 0;
                 bool flag = true;
                 int counter1 = 0;
+                int seriaCounter = 0;
+                string seria = "seria1";
                 Movements.Add("\nДелим данные на два вспомогательных файла\n" +
                     $"c итерацией равной {_iterations}\n");
                 foreach (DataRow row in DataNewTable.Rows)
@@ -280,18 +316,24 @@ namespace HardLab5.ViewModels
                         _series.Add(counter + 1);
                         counter = 0;
                         _segments++;
+                        seriaCounter++;
+                        if(seriaCounter == 2)
+                        {
+                            seria = (seria == "seria1") ? "seria2" : "seria1";
+                            seriaCounter = 0;
+                        }
                     }
                     if (flag)
                     {
                         Movements.Add($"Добавляем в таблицу A строку номер {DataNewTable.Rows.IndexOf(row)}");
-                        AddRowInTable(row, DataTableA);
+                        AddRowInTable(row, DataTableA, seria);
                         counter++;
                         await Task.Delay(1010 - Slider);
                     }
                     else
                     {
                         Movements.Add($"Добавляем в таблицу B строку номер {DataNewTable.Rows.IndexOf(row)}");
-                        AddRowInTable(row, DataTableB);
+                        AddRowInTable(row, DataTableB, seria);
                         counter++;
                         await Task.Delay(1010 - Slider);
                     }
@@ -315,6 +357,8 @@ namespace HardLab5.ViewModels
                 int positionA = 0;
                 int positionB = 0;
                 int currentPA = 0;
+                string strSeriaA = "seria1";
+                string strSeriaB = "seria1";
                 int currentPB = _iterations;
                 int seriaA = 0; int seriaB = 0;
                 int indA = 0; int indB = 1;
@@ -337,9 +381,14 @@ namespace HardLab5.ViewModels
                         {
                             if (!pickedA)
                             {
+                                DataColumn colunm = DataTableA.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == "Hidden");
+                                strSeriaA = string.Format("{0}", DataTableA.Rows[positionA][colunm.ToString()]);
+                                ChangeTable(DataTableA, positionA, "current");
                                 newRowA = DataTableA.Rows[positionA];
+                                //DataTableA.Rows[positionA]["Hidden"] = "current";
                                 positionA += 1;
                                 pickedA = true;
+                                await Task.Delay(1010 - Slider);
                             }
                         }
                     }
@@ -354,9 +403,14 @@ namespace HardLab5.ViewModels
                         {
                             if (!pickedB)
                             {
+                                DataColumn colunm = DataTableB.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == "Hidden");
+                                strSeriaB = string.Format("{0}", DataTableB.Rows[positionB][colunm.ToString()]);
+                                ChangeTable(DataTableB, positionB, "current");
                                 newRowB = DataTableB.Rows[positionB];
+                                //DataTableB.Rows[positionB]["Hidden"] = "current";
                                 positionB += 1;
                                 pickedB = true;
+                                await Task.Delay(1010 - Slider);
                             }
                         }
                     }
@@ -365,8 +419,8 @@ namespace HardLab5.ViewModels
                         endB = true;
                     }
                     DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
-                    string tempA = string.Format("{0}", newRowA[myColunm.ToString()]);
-                    string tempB = string.Format("{0}", newRowB[myColunm.ToString()]);
+                    string tempA = string.Format("{0}", DataTableA.Rows[positionA-1][myColunm.ToString()]);
+                    string tempB = string.Format("{0}", DataTableB.Rows[positionB-1][myColunm.ToString()]);
                     if (endA && endB && pickedA == false && pickedB == false)
                     {
                         break;
@@ -378,7 +432,8 @@ namespace HardLab5.ViewModels
                             if (CompareDifferentTypes(tempA, tempB))
                             {
                                 Movements.Add($"{tempA} < {tempB}, записываем {tempA}  в таблицу");
-                                AddRowInTable(newRowA, DataNewTable);
+                                ChangeTable(DataTableA, positionA-1, strSeriaA);
+                                AddRowInTable(DataTableA.Rows[positionA-1], DataNewTable);
                                 counterA--;
                                 pickedA = false;
                                 await Task.Delay(1010 - Slider);
@@ -386,7 +441,8 @@ namespace HardLab5.ViewModels
                             else
                             {
                                 Movements.Add($"{tempB} < {tempA}, записываем {tempB}  в таблицу");
-                                AddRowInTable(newRowB, DataNewTable);
+                                ChangeTable(DataTableB, positionB-1, strSeriaB);
+                                AddRowInTable(DataTableB.Rows[positionB-1], DataNewTable);
                                 counterB--;
                                 pickedB = false;
                             }
@@ -394,7 +450,8 @@ namespace HardLab5.ViewModels
                         else
                         {
                             Movements.Add($"записываем {tempA}  в таблицу");
-                            AddRowInTable(newRowA, DataNewTable);
+                            ChangeTable(DataTableA, positionA-1, strSeriaA);
+                            AddRowInTable(DataTableA.Rows[positionA-1], DataNewTable);
                             counterA--;
                             pickedA = false;
                             await Task.Delay(1010 - Slider);
@@ -403,7 +460,8 @@ namespace HardLab5.ViewModels
                     else if (pickedB)
                     {
                         Movements.Add($"записываем {tempB}  в таблицу");
-                        AddRowInTable(newRowB, DataNewTable);
+                        ChangeTable(DataTableB, positionB-1, strSeriaB);
+                        AddRowInTable(DataTableB.Rows[positionB-1], DataNewTable);
                         counterB--;
                         pickedB = false;
                         await Task.Delay(1010 - Slider);
@@ -1172,4 +1230,5 @@ namespace HardLab5.ViewModels
             FileRewriter.RewriteCSV(folderPath, selectedTable, selectedScheme);
         }
     }
+   
 }
