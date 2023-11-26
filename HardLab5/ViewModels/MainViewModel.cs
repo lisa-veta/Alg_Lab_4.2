@@ -319,8 +319,14 @@ namespace HardLab5
                 vmSorted.DataTableС = new DataTable();
                 vmSorted.folderPath = folderPath;
                 List<string> names = new List<string>();
+                bool flag = true;
                 foreach (var column in DataCurrentTable.Columns)
                 {
+                    if (flag)
+                    {
+                        flag = false;
+                        continue;
+                    }
                     names.Add(column.ToString());
                 }
                 vmSorted.CurrentColumns = names;

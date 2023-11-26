@@ -92,6 +92,7 @@ namespace HardLab5.ViewModels
 
         private List<int> _seriesA = new List<int>();
         public List<int> _seriesB = new List<int>();
+        public List<int> _seriesC = new List<int>();
         public DataGrid DataGrid { get; set; }
         public DataGrid DataGrid1 { get; set; }
         public DataGrid DataGrid2 { get; set; }
@@ -204,7 +205,7 @@ namespace HardLab5.ViewModels
             }
             DataTableA.Rows.Clear();
             DataTableA = dataTable;
-
+            DataGrid1.Columns[0].Visibility = Visibility.Collapsed;
             DataTable dataTable1 = new DataTable();
             foreach (Column column in keyTable.Key.Columns)
             {
@@ -212,7 +213,7 @@ namespace HardLab5.ViewModels
             }
             DataTableB.Rows.Clear();
             DataTableB = dataTable1;
-
+            DataGrid2.Columns[0].Visibility = Visibility.Collapsed;
             DataTable dataTable2 = new DataTable();
             foreach (Column column in keyTable.Key.Columns)
             {
@@ -220,6 +221,7 @@ namespace HardLab5.ViewModels
             }
             DataTableС.Rows.Clear();
             DataTableС = dataTable2;
+            DataGrid3.Columns[0].Visibility = Visibility.Collapsed;
             DoThreeWaySort();
         }
 
@@ -563,6 +565,7 @@ namespace HardLab5.ViewModels
             }
             DataTableA.Rows.Clear();
             DataTableA = dataTable;
+            DataGrid1.Columns[0].Visibility = Visibility.Collapsed;
             DataTable dataTable1 = new DataTable();
             foreach (Column column in keyTable.Key.Columns)
             {
@@ -570,6 +573,7 @@ namespace HardLab5.ViewModels
             }
             DataTableB.Rows.Clear();
             DataTableB = dataTable1;
+            DataGrid2.Columns[0].Visibility = Visibility.Collapsed;
             NativeOuterSort2();
         }
 
@@ -725,13 +729,16 @@ namespace HardLab5.ViewModels
             IsEnable = false;
             while (true)
             {
+                _series.Clear();
                 _segments = 1;
                 DataRow prev = DataNewTable.Rows[0];
                 bool flag = true;
                 bool flagf = true;
+                int seriaCounter = 0;
+                string seria = "seria1";
                 Movements.Add("\nФайл разделяется на 2 вспомогательных,\nразделяя основной файл на серии\n" +
                               "(уже отсортированные подмассивы).\nНечетные серии в таблицу А, нечётные - B\n");
-                AddRowInTable(prev, DataTableA);
+                AddRowInTable(prev, DataTableA, seria);
                 int counter = 0;
                 foreach (DataRow cur in DataNewTable.Rows)
                 {
@@ -750,12 +757,18 @@ namespace HardLab5.ViewModels
                         _segments++;
                         _series.Add(counter + 1);
                         counter = 0;
+                        seriaCounter++;
+                        if (seriaCounter == 2)
+                        {
+                            seria = (seria == "seria1") ? "seria2" : "seria1";
+                            seriaCounter = 0;
+                        }
                     }
                     if (flag)
                     {
                         Movements.Add($"Добавление строки под номером {DataNewTable.Rows.IndexOf(cur)} в таблицу А\n" +
                                       "Продолжается серия элементов");
-                        AddRowInTable(cur, DataTableA);
+                        AddRowInTable(cur, DataTableA, seria);
                         await Task.Delay(1010 - Slider);
                         counter++;
                     }
@@ -763,7 +776,7 @@ namespace HardLab5.ViewModels
                     {
                         Movements.Add($"Добавление строки под номером {DataNewTable.Rows.IndexOf(cur)} в таблицу B\n" +
                                       "Продолжается серия элементов");
-                        AddRowInTable(cur, DataTableB);
+                        AddRowInTable(cur, DataTableB, seria);
                         await Task.Delay(1010 - Slider);
                         counter++;
                     }
@@ -783,6 +796,8 @@ namespace HardLab5.ViewModels
                 SetNewSeries(DataTableA, _seriesA);
                 SetNewSeries(DataTableB, _seriesB);
 
+                string strSeriaA = "seria1";
+                string strSeriaB = "seria1";
                 bool pickedA = false, pickedB = false;
                 int positionA = 0, positionB = 0;
                 int seriaA = _seriesA[0]; int seriaB = _seriesB[0];
@@ -815,9 +830,13 @@ namespace HardLab5.ViewModels
                         {
                             if (!pickedA)
                             {
+                                DataColumn colunm = DataTableA.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == "Hidden");
+                                strSeriaA = string.Format("{0}", DataTableA.Rows[positionA][colunm.ToString()]);
+                                ChangeTable(DataTableA, positionA, "current");
                                 newRowA = DataTableA.Rows[positionA];
                                 positionA += 1;
                                 pickedA = true;
+                                await Task.Delay(1010 - Slider);
                             }
                         }
                     }
@@ -832,9 +851,13 @@ namespace HardLab5.ViewModels
                         {
                             if (!pickedB)
                             {
+                                DataColumn colunm = DataTableB.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == "Hidden");
+                                strSeriaB = string.Format("{0}", DataTableB.Rows[positionB][colunm.ToString()]);
+                                ChangeTable(DataTableB, positionB, "current");
                                 newRowB = DataTableB.Rows[positionB];
                                 positionB += 1;
                                 pickedB = true;
+                                await Task.Delay(1010 - Slider);
                             }
                         }
                     }
@@ -848,8 +871,8 @@ namespace HardLab5.ViewModels
                         break;
                     }
                     DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
-                    string tempA = string.Format("{0}", newRowA[myColunm.ToString()]);
-                    string tempB = string.Format("{0}", newRowB[myColunm.ToString()]);
+                    string tempA = string.Format("{0}", DataTableA.Rows[positionA-1][myColunm.ToString()]);
+                    string tempB = string.Format("{0}", DataTableB.Rows[positionB-1][myColunm.ToString()]);
                     if (pickedA)
                     {
                         if (pickedB)
@@ -857,7 +880,8 @@ namespace HardLab5.ViewModels
                             if (CompareDifferentTypes(tempA, tempB))
                             {
                                 Movements.Add($"Элемент {tempB} > {tempA}, добавляем {tempA} в основную таблицу.");
-                                AddRowInTable(newRowA, DataNewTable);
+                                ChangeTable(DataTableA, positionA - 1, strSeriaA);
+                                AddRowInTable(DataTableA.Rows[positionA - 1], DataNewTable);
                                 pickedA = false;
                                 seriaA--;
                                 await Task.Delay(1010 - Slider);
@@ -865,7 +889,8 @@ namespace HardLab5.ViewModels
                             else
                             {
                                 Movements.Add($"Элемент {tempA} > {tempB}, добавляем {tempB} в основную таблицу.");
-                                AddRowInTable(newRowB, DataNewTable);
+                                ChangeTable(DataTableB, positionB - 1, strSeriaB);
+                                AddRowInTable(DataTableB.Rows[positionB - 1], DataNewTable);
                                 pickedB = false;
                                 seriaB--;
                                 await Task.Delay(1010 - Slider);
@@ -874,7 +899,8 @@ namespace HardLab5.ViewModels
                         else
                         {
                             Movements.Add($"Добавляем {tempA} в основную таблицу.");
-                            AddRowInTable(newRowA, DataNewTable);
+                            ChangeTable(DataTableA, positionA - 1, strSeriaA);
+                            AddRowInTable(DataTableA.Rows[positionA - 1], DataNewTable);
                             pickedA = false;
                             seriaA--;
                             await Task.Delay(1010 - Slider);
@@ -883,7 +909,8 @@ namespace HardLab5.ViewModels
                     else if (pickedB)
                     {
                         Movements.Add($"Добавляем {tempB} в основную таблицу.");
-                        AddRowInTable(newRowB, DataNewTable);
+                        ChangeTable(DataTableB, positionB - 1, strSeriaB);
+                        AddRowInTable(DataTableB.Rows[positionB - 1], DataNewTable);
                         pickedB = false;
                         seriaB--;
                         await Task.Delay(1010 - Slider);
@@ -909,6 +936,13 @@ namespace HardLab5.ViewModels
             string prev = dataTable.Rows[0][columnNumber].ToString();
             string cur;
             int count = 0;
+            DataTable newTable = new DataTable();
+            foreach(Column column in keyTable.Key.Columns)
+            {
+                newTable.Columns.Add(column.Name);
+            }
+            string seria = "seria1";
+            AddRowInTable(dataTable.Rows[0], newTable, seria);
             for (int i = 1; i < dataTable.Rows.Count; i++)
             {
                 cur = dataTable.Rows[i][columnNumber].ToString();
@@ -917,16 +951,82 @@ namespace HardLab5.ViewModels
                     series.Add(count + 1);
                     count = 0;
                     prev = cur;
+                    seria = (seria == "seria1") ? "seria2" : "seria1";
+                    AddRowInTable(dataTable.Rows[i], newTable, seria);
                     if (i == dataTable.Rows.Count - 1)
                     {
                         series.Add(count + 1);
+                        seria = (seria == "seria1") ? "seria2" : "seria1";
                     }
                     continue;
                 }
                 count++;
+                AddRowInTable(dataTable.Rows[i], newTable, seria);
                 if (i == dataTable.Rows.Count - 1)
                 {
                     series.Add(count + 1);
+                    seria = (seria == "seria1") ? "seria2" : "seria1";
+                }
+                prev = cur;
+            }
+            dataTable.Rows.Clear();
+            foreach (DataRow row in newTable.Rows)
+            {
+                dataTable.Rows.Add(row.ItemArray);
+            }
+        }
+
+        private void SetNewSeriesNew(DataTable dataTable, List<int> series)
+        {
+            DataTable temp = new DataTable();
+            foreach (Column column in keyTable.Key.Columns)
+            {
+                temp.Columns.Add(column.Name);
+            }
+            foreach (DataRow row in dataTable.Rows)
+            {
+                temp.Rows.Add(row.ItemArray);
+            }
+            dataTable.Rows.Clear();
+            series.Clear();
+            DataRow prev = temp.Rows[0];
+            bool flag = true;
+            bool flagf = true;
+            int seriaCounter = 0;
+            string seria = "seria1";
+            AddRowInTable(prev, dataTable);
+            int counter = 0;
+            foreach (DataRow cur in temp.Rows)
+            {
+                if (flagf)
+                {
+                    flagf = false;
+                    continue;
+                }
+                DataColumn myColunm = temp.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
+                string tempA = string.Format("{0}", prev[myColunm.ToString()]);
+                string tempB = string.Format("{0}", cur[myColunm.ToString()]);
+                if (CompareDifferentTypes(tempB, tempA))
+                {
+                    flag = !flag;
+                    series.Add(counter + 1);
+                    counter = 0;
+                    seriaCounter++;
+                    if (seriaCounter == 2)
+                    {
+                        seria = (seria == "seria1") ? "seria2" : "seria1";
+                        seriaCounter = 0;
+                    }
+                }
+                if (flag)
+                {
+                    AddRowInTable(cur, dataTable, seria);
+                    counter++;
+                }
+                else
+                {
+                    AddRowInTable(cur, dataTable, seria);
+                    counter++;
                 }
                 prev = cur;
             }
@@ -936,53 +1036,102 @@ namespace HardLab5.ViewModels
         {
             Movements.Add("Внешняя сортировка: трехпутевое слияние");
             IsEnable = false;
+            _iterations = 1;
             while (true)
             {
-                _segments = 1;
-                bool flag = true;
-                int counter = 0;
-                int mainTable = 1;
+                //bool flag = true;
                 Movements.Add("\nДелим данные на два вспомогательных файла,\n" +
                     "сравнивая предыдущий с текущим чтобы в файлах\nэлементы были от меньшего к большему\n" +
                     "для последующего корректного сравнения");
-                DataRow prev = DataNewTable.Rows[0];
-                Movements.Add($"Сначала добавляем в таблицу A строку номер {DataNewTable.Rows.IndexOf(prev)}");
-                AddRowInTable(prev, DataTableA);
+                //DataRow prev = DataNewTable.Rows[0];
+                //Movements.Add($"Сначала добавляем в таблицу A строку номер {DataNewTable.Rows.IndexOf(prev)}");
+                //AddRowInTable(prev, DataTableA);
+                _segments = 1;
+                int counterI = 0;
+                bool flag = true;
+                int counter1 = 0;
+                int seriaCounter = 0;
+                string seria = "seria1";
+                Movements.Add("\nДелим данные на три вспомогательных файла\n" +
+                    $"c итерацией равной {_iterations}\n");
                 foreach (DataRow row in DataNewTable.Rows)
                 {
-                    if (flag)
+                    if (counterI == _iterations)
                     {
-                        flag = false;
-                        continue;
-                    }
-                    DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
-                    string tempA = string.Format("{0}", prev[myColunm.ToString()]);
-                    string tempB = string.Format("{0}", row[myColunm.ToString()]);
-                    if (CompareDifferentTypes(tempB, tempA))
-                    {
-                        Movements.Add($"{tempA} > {tempB}, следующий элемент записывается в новый файл");
+                        Movements.Add("Меняем таблицу");
+                        flag = !flag;
+                        counterI = 0;
                         _segments++;
+                        seriaCounter++;
+                        if (seriaCounter == 3)
+                        {
+                            seria = (seria == "seria1") ? "seria2" : "seria1";
+                            seriaCounter = 0;
+                        }
                     }
                     if (_segments % 3 == 1)
                     {
                         Movements.Add($"Добавляем в таблицу A строку номер {DataNewTable.Rows.IndexOf(row)}");
-                        AddRowInTable(row, DataTableA);
+                        AddRowInTable(row, DataTableA, seria);
                         await Task.Delay(1010 - Slider);
                     }
-                    else if (_segments % 3 == 2)
+                    else if(_segments % 3 == 2)
                     {
                         Movements.Add($"Добавляем в таблицу B строку номер {DataNewTable.Rows.IndexOf(row)}");
-                        AddRowInTable(row, DataTableB);
+                        AddRowInTable(row, DataTableB, seria);
                         await Task.Delay(1010 - Slider);
                     }
                     else
                     {
-                        Movements.Add($"Добавляем в таблицу C строку номер {DataNewTable.Rows.IndexOf(row)}");
-                        AddRowInTable(row, DataTableС);
+                        Movements.Add($"Добавляем в таблицу С строку номер {DataNewTable.Rows.IndexOf(row)}");
+                        AddRowInTable(row, DataTableС, seria);
                         await Task.Delay(1010 - Slider);
                     }
-                    prev = row;
+                    counter1++;
+                    counterI++;
                 }
+                flag = true;
+                //foreach (DataRow row in DataNewTable.Rows)
+                //{
+                //    if (flag)
+                //    {
+                //        flag = false;
+                //        continue;
+                //    }
+                //    DataColumn myColunm = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
+                //    string tempA = string.Format("{0}", prev[myColunm.ToString()]);
+                //    string tempB = string.Format("{0}", row[myColunm.ToString()]);
+                //    if (CompareDifferentTypes(tempB, tempA))
+                //    {
+                //        Movements.Add($"{tempA} > {tempB}, следующий элемент записывается в новый файл");
+                //        _segments++;
+                //        seriaCounter++;
+                //        if (seriaCounter == 2)
+                //        {
+                //            seria = (seria == "seria1") ? "seria2" : "seria1";
+                //            seriaCounter = 0;
+                //        }
+                //    }
+                //    if (_segments % 3 == 1)
+                //    {
+                //        Movements.Add($"Добавляем в таблицу A строку номер {DataNewTable.Rows.IndexOf(row)}");
+                //        AddRowInTable(row, DataTableA, seria);
+                //        await Task.Delay(1010 - Slider);
+                //    }
+                //    else if (_segments % 3 == 2)
+                //    {
+                //        Movements.Add($"Добавляем в таблицу B строку номер {DataNewTable.Rows.IndexOf(row)}");
+                //        AddRowInTable(row, DataTableB, seria);
+                //        await Task.Delay(1010 - Slider);
+                //    }
+                //    else
+                //    {
+                //        Movements.Add($"Добавляем в таблицу C строку номер {DataNewTable.Rows.IndexOf(row)}");
+                //        AddRowInTable(row, DataTableС, seria);
+                //        await Task.Delay(1010 - Slider);
+                //    }
+                //    prev = row;
+                //}
 
                 if (_segments == 1)
                 {
@@ -991,21 +1140,54 @@ namespace HardLab5.ViewModels
                 }
                 Movements.Add($"\nТеперь сливаем таблицу A и B в одну\n");
                 DataNewTable.Rows.Clear();
+                //if(DataTableA.Rows.Count > 0)
+                //{
+                //    SetNewSeries(DataTableA, _seriesA);
+                //}
+                //if(DataTableB.Rows.Count > 0)
+                //{
+                //    SetNewSeries(DataTableB, _seriesB);
+                //}
+                //if(DataTableС.Rows.Count > 0)
+                //{
+                //    SetNewSeries(DataTableС, _seriesC);
+                //}
                 DataRow newRowA = DataNewTable.NewRow();
                 DataRow newRowB = DataNewTable.NewRow();
                 DataRow newRowC = DataNewTable.NewRow();
                 int counterA = _iterations;
                 int counterB = _iterations;
                 int counterC = _iterations;
+                string strSeriaA = "seria1";
+                string strSeriaB = "seria1";
+                string strSeriaC = "seria1";
                 bool pickedA = false, pickedB = false, pickedC = false, endA = false, endB = false, endC = false;
                 int positionA = 0; int positionB = 0; int positionC = 0;
                 int currentPA = 0; int currentPB = 0; int currentPC = 0;
+                //int seriaA = _seriesA[0]; int seriaB = _seriesB[0]; int seriaC = _seriesC[0];
+                int indA = 0; int indB=0; int indC = 0;
                 while(true)
                 {
                     if (endA && endB && endC && pickedA == false && pickedB == false && pickedC == false)
                     {
                         break;
                     }
+                    //if (seriaA == 0 && seriaB == 0 && seriaC ==0)
+                    //{
+                    //    indA++; indB++; indC++;
+                    //    if (indA <= _seriesA.Count - 1)
+                    //    {
+                    //        seriaA = _seriesA[indA];
+                    //    }
+                    //    if (indB <= _seriesB.Count - 1)
+                    //    {
+                    //        seriaB = _seriesB[indB];
+                    //    }
+                    //    if (indC <= _seriesC.Count - 1)
+                    //    {
+                    //        seriaC = _seriesC[indC];
+                    //    }
+                    //}
 
                     if (counterA == 0 && counterB == 0 && counterC == 0)
                     {
@@ -1029,12 +1211,17 @@ namespace HardLab5.ViewModels
                     if (positionA != DataTableA.Rows.Count)
                     {
                         if (counterA > 0)
+                        //if(seriaA > 0)
                         {
                             if (!pickedA)
                             {
+                                DataColumn colunm = DataTableA.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == "Hidden");
+                                strSeriaA = string.Format("{0}", DataTableA.Rows[positionA][colunm.ToString()]);
+                                ChangeTable(DataTableA, positionA, "current");
                                 newRowA = DataTableA.Rows[positionA];
                                 positionA += 1;
                                 pickedA = true;
+                                await Task.Delay(1010 - Slider);
                             }
                         }
                     }
@@ -1046,12 +1233,17 @@ namespace HardLab5.ViewModels
                     if (positionB != DataTableB.Rows.Count)
                     {
                         if (counterB > 0)
+                        //if (seriaB > 0)
                         {
                             if (!pickedB)
                             {
+                                DataColumn colunm = DataTableB.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == "Hidden");
+                                strSeriaB = string.Format("{0}", DataTableB.Rows[positionB][colunm.ToString()]);
+                                ChangeTable(DataTableB, positionB, "current");
                                 newRowB = DataTableB.Rows[positionB];
                                 positionB += 1;
                                 pickedB = true;
+                                await Task.Delay(1010 - Slider);
                             }
                         }
                     }
@@ -1063,12 +1255,17 @@ namespace HardLab5.ViewModels
                     if (positionC != DataTableС.Rows.Count)
                     {
                         if (counterC > 0)
+                        //if (seriaC > 0)
                         {
                             if (!pickedC)
                             {
+                                DataColumn colunm = DataTableС.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == "Hidden");
+                                strSeriaC = string.Format("{0}", DataTableС.Rows[positionC][colunm.ToString()]);
+                                ChangeTable(DataTableС, positionC, "current");
                                 newRowC = DataTableС.Rows[positionC];
                                 positionC += 1;
                                 pickedC = true;
+                                await Task.Delay(1010 - Slider);
                             }
                         }
                     }
@@ -1082,9 +1279,8 @@ namespace HardLab5.ViewModels
                         break;
                     }
                     DataColumn myColumn = DataNewTable.Columns.Cast<DataColumn>().SingleOrDefault(col => col.ColumnName == SelectedColumn);
-                    string tempA = string.Format("{0}", newRowA[myColumn.ToString()]);
-                    string tempB = string.Format("{0}", newRowB[myColumn.ToString()]);
-                    string tempC = string.Format("{0}", newRowC[myColumn.ToString()]);
+                    string tempA = string.Format("{0}", DataTableA.Rows[positionA-1][myColumn.ToString()]);
+                    string tempB = string.Format("{0}", DataTableB.Rows[positionB-1][myColumn.ToString()]);
                     if (pickedA)
                     {
                         if (pickedB)
@@ -1093,19 +1289,24 @@ namespace HardLab5.ViewModels
                             {
                                 if (pickedC)
                                 {
+                                    string tempC = string.Format("{0}", DataTableС.Rows[positionC - 1][myColumn.ToString()]);
                                     if (CompareDifferentTypes(tempA, tempC))
                                     {
                                         Movements.Add($"{tempA} < {tempC} и {tempA} < {tempB},\nзаписываем {tempA}  в таблицу");
-                                        AddRowInTable(newRowA, DataNewTable);
+                                        ChangeTable(DataTableA, positionA - 1, strSeriaA);
+                                        AddRowInTable(DataTableA.Rows[positionA - 1], DataNewTable);
                                         counterA--;
                                         pickedA = false;
+                                        //seriaA--;
                                         await Task.Delay(1010 - Slider);
                                     }
                                     else
                                     {
                                         Movements.Add($"{tempC} < {tempA} и {tempC} < {tempB}, записываем {tempC}  в таблицу");
-                                        AddRowInTable(newRowC, DataNewTable);
+                                        ChangeTable(DataTableС, positionC - 1, strSeriaC);
+                                        AddRowInTable(DataTableС.Rows[positionC - 1], DataNewTable);
                                         counterC--;
+                                        //seriaC--;
                                         pickedC = false;
                                         await Task.Delay(1010 - Slider);
                                     }
@@ -1113,8 +1314,10 @@ namespace HardLab5.ViewModels
                                 else
                                 {
                                     Movements.Add($"записываем {tempA} <  {tempB}, записываем {tempA}  в таблицу");
-                                    AddRowInTable(newRowA, DataNewTable);
+                                    ChangeTable(DataTableA, positionA - 1, strSeriaA);
+                                    AddRowInTable(DataTableA.Rows[positionA - 1], DataNewTable);
                                     counterA--;
+                                    //seriaA--;
                                     pickedA = false;
                                     await Task.Delay(1010 - Slider);
                                 }
@@ -1123,19 +1326,24 @@ namespace HardLab5.ViewModels
                             {
                                 if (pickedC)
                                 {
+                                    string tempC = string.Format("{0}", DataTableС.Rows[positionC - 1][myColumn.ToString()]);
                                     if (CompareDifferentTypes(tempB, tempC))
                                     {
                                         Movements.Add($"{tempB} < {tempA} и {tempB} < {tempC},\nзаписываем {tempB}  в таблицу");
-                                        AddRowInTable(newRowB, DataNewTable);
+                                        ChangeTable(DataTableB, positionB - 1, strSeriaB);
+                                        AddRowInTable(DataTableB.Rows[positionB - 1], DataNewTable);
                                         counterB--;
+                                        //seriaB--;
                                         pickedB = false;
                                         await Task.Delay(1010 - Slider);
                                     }
                                     else
                                     {
                                         Movements.Add($"{tempC} < {tempA} и {tempC} < {tempB},\nзаписываем {tempC}  в таблицу");
-                                        AddRowInTable(newRowC, DataNewTable);
+                                        ChangeTable(DataTableС, positionC - 1, strSeriaC);
+                                        AddRowInTable(DataTableС.Rows[positionC - 1], DataNewTable);
                                         counterC--;
+                                        //seriaC--;
                                         pickedC = false;
                                         await Task.Delay(1010 - Slider);
                                     }
@@ -1143,8 +1351,10 @@ namespace HardLab5.ViewModels
                                 else
                                 {
                                     Movements.Add($"{tempB} < {tempA},\nзаписываем {tempB}  в таблицу");
-                                    AddRowInTable(newRowB, DataNewTable);
+                                    ChangeTable(DataTableB, positionB - 1, strSeriaB);
+                                    AddRowInTable(DataTableB.Rows[positionB - 1], DataNewTable);
                                     counterB--;
+                                    //seriaB--;
                                     pickedB = false;
                                     await Task.Delay(1010 - Slider);
                                 }
@@ -1152,19 +1362,24 @@ namespace HardLab5.ViewModels
                         }
                         else if (pickedC)
                         {
+                            string tempC = string.Format("{0}", DataTableС.Rows[positionC - 1][myColumn.ToString()]);
                             if (CompareDifferentTypes(tempA, tempC))
                             {
                                 Movements.Add($"{tempA} < {tempC}, записываем {tempA}  в таблицу");
-                                AddRowInTable(newRowA, DataNewTable);
+                                ChangeTable(DataTableA, positionA - 1, strSeriaA);
+                                AddRowInTable(DataTableA.Rows[positionA - 1], DataNewTable);
                                 counterA--;
+                                //seriaA--;
                                 pickedA = false;
                                 await Task.Delay(1010 - Slider);
                             }
                             else
                             {
                                 Movements.Add($"{tempC} < {tempA}, записываем {tempC}  в таблицу");
-                                AddRowInTable(newRowC, DataNewTable);
+                                ChangeTable(DataTableС, positionC - 1, strSeriaC);
+                                AddRowInTable(DataTableС.Rows[positionC - 1], DataNewTable);
                                 counterC--;
+                                //seriaC--;
                                 pickedC = false;
                                 await Task.Delay(1010 - Slider);
                             }
@@ -1172,8 +1387,10 @@ namespace HardLab5.ViewModels
                         else
                         {
                             Movements.Add($"записываем {tempA}  в таблицу");
-                            AddRowInTable(newRowA, DataNewTable);
+                            ChangeTable(DataTableA, positionA - 1, strSeriaA);
+                            AddRowInTable(DataTableA.Rows[positionA - 1], DataNewTable);
                             counterA--;
+                            //seriaA--;
                             pickedA = false;
                             await Task.Delay(1010 - Slider);
                         }
@@ -1182,19 +1399,24 @@ namespace HardLab5.ViewModels
                     {
                         if (pickedC)
                         {
+                            string tempC = string.Format("{0}", DataTableС.Rows[positionC - 1][myColumn.ToString()]);
                             if (CompareDifferentTypes(tempB, tempC))
                             {
                                 Movements.Add($"{tempB} < {tempC}, записываем {tempB}  в таблицу");
-                                AddRowInTable(newRowB, DataNewTable);
+                                ChangeTable(DataTableB, positionB - 1, strSeriaB);
+                                AddRowInTable(DataTableB.Rows[positionB - 1], DataNewTable);
                                 counterB--;
+                                //seriaB--;
                                 pickedB = false;
                                 await Task.Delay(1010 - Slider);
                             }
                             else
                             {
                                 Movements.Add($"{tempC} < {tempB}, записываем {tempC}  в таблицу");
-                                AddRowInTable(newRowC, DataNewTable);
+                                ChangeTable(DataTableС, positionC - 1, strSeriaC);
+                                AddRowInTable(DataTableС.Rows[positionC - 1], DataNewTable);
                                 counterC--;
+                                //seriaC--;
                                 pickedC = false;
                                 await Task.Delay(1010 - Slider);
                             }
@@ -1202,17 +1424,22 @@ namespace HardLab5.ViewModels
                         else
                         {
                             Movements.Add($"записываем {tempB}  в таблицу");
-                            AddRowInTable(newRowB, DataNewTable);
+                            ChangeTable(DataTableB, positionB - 1, strSeriaB);
+                            AddRowInTable(DataTableB.Rows[positionB - 1], DataNewTable);
                             counterB--;
+                            //seriaB--;
                             pickedB = false;
                             await Task.Delay(1010-Slider);
                         }
                     }
                     else if (pickedC)
                     {
+                        string tempC = string.Format("{0}", DataTableС.Rows[positionC - 1][myColumn.ToString()]);
                         Movements.Add($"записываем {tempC}  в таблицу");
-                        AddRowInTable(newRowC, DataNewTable);
+                        ChangeTable(DataTableС, positionC - 1, strSeriaC);
+                        AddRowInTable(DataTableС.Rows[positionC - 1], DataNewTable);
                         counterC--;
+                        //seriaC--;
                         pickedC = false;
                         await Task.Delay(1010 - Slider);
                     }
@@ -1220,7 +1447,7 @@ namespace HardLab5.ViewModels
                     currentPB += positionB;
                     currentPC += positionC;
                 }
-                _iterations *= 2;
+                _iterations *= 3;
                 DataTableA.Rows.Clear();
                 DataTableB.Rows.Clear();
                 DataTableС.Rows.Clear();
