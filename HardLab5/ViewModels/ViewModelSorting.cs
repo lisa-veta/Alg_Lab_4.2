@@ -793,6 +793,8 @@ namespace HardLab5.ViewModels
                 DataNewTable.Rows.Clear();
                 DataRow newRowA = DataNewTable.NewRow();
                 DataRow newRowB = DataNewTable.NewRow();
+                _seriesA.Clear();
+                _seriesB.Clear();
                 SetNewSeries(DataTableA, _seriesA);
                 SetNewSeries(DataTableB, _seriesB);
 
@@ -968,6 +970,10 @@ namespace HardLab5.ViewModels
                     seria = (seria == "seria1") ? "seria2" : "seria1";
                 }
                 prev = cur;
+            }
+            if(series == null || series.Count == 0)
+            {
+                series.Add(1);
             }
             dataTable.Rows.Clear();
             foreach (DataRow row in newTable.Rows)
