@@ -182,6 +182,7 @@ namespace HardLab5
         public void TableSelected(object sender, RoutedEventArgs e)
         {
             ((MainWindow)System.Windows.Application.Current.MainWindow).DataGrid.Columns.Clear();
+            
             tableName = ((TreeViewItem)sender).Header.ToString().Replace(".csv", "");
             DataTable dataTable = new DataTable();
             foreach (var keyTable in keyTables)
@@ -193,6 +194,7 @@ namespace HardLab5
                 }
             }
             DataCurrentTable = dataTable;
+           ((MainWindow)System.Windows.Application.Current.MainWindow).DataGrid.Columns[0].Visibility = Visibility.Collapsed;
         }
 
         private DataTable GreateDataTable(KeyValuePair<TableScheme, Table> keyTable, DataTable dataTable)
@@ -310,14 +312,21 @@ namespace HardLab5
                 vmSorted.DataGrid = wind.DataNewGrid;
                 vmSorted.DataGrid1 = wind.DataGrid1;
                 vmSorted.DataGrid2 = wind.DataGrid2;
+                vmSorted.DataGrid3 = wind.DataGrid3;
                 vmSorted.DataNewTable = DataCurrentTable;
                 vmSorted.DataTableA = new DataTable();
                 vmSorted.DataTableB = new DataTable();
-                vmSorted.DataTableC = new DataTable();
+                vmSorted.DataTableС = new DataTable();
                 vmSorted.folderPath = folderPath;
                 List<string> names = new List<string>();
+                bool flag = true;
                 foreach (var column in DataCurrentTable.Columns)
                 {
+                    if (flag)
+                    {
+                        flag = false;
+                        continue;
+                    }
                     names.Add(column.ToString());
                 }
                 vmSorted.CurrentColumns = names;
@@ -339,5 +348,6 @@ namespace HardLab5
             }
         });
 
+        
     }
 }

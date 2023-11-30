@@ -44,15 +44,15 @@
         </TreeView>
         <DataGrid Name="DataGrid"  Grid.Column="3" Grid.Row="3"  AutoGenerateColumns="True" ItemsSource="{Binding DataCurrentTable}"  CanUserAddRows="False" 
                   RowBackground="LightYellow" AlternatingRowBackground="LightBlue" Grid.ColumnSpan="6"/>
-        <Button x:Name="CreateDB" Command="{Binding  CreateNewDB}" FontSize="14" Grid.Column="3" Grid.Row="5" Content="Создать БД" Background="DarkSeaGreen"/>
-        <Button x:Name="CreateNewTable" Command="{Binding  CreateNewTable}" FontSize="14" Grid.Column="4" Grid.Row="5" Content="Создать таблицу" Background="DarkSeaGreen"/>
-        <Button x:Name="Edit" Command="{Binding  EditTable}" Grid.Column="5" Grid.Row="5" Background="DarkSeaGreen">
+        <Button x:Name="CreateDB" Visibility="Hidden" Command="{Binding  CreateNewDB}" FontSize="14" Grid.Column="3" Grid.Row="5" Content="Создать БД" Background="DarkSeaGreen"/>
+        <Button x:Name="CreateNewTable"  Visibility="Hidden" Command="{Binding  CreateNewTable}" FontSize="14" Grid.Column="4" Grid.Row="5" Content="Создать таблицу" Background="DarkSeaGreen"/>
+        <Button x:Name="Edit" Visibility="Hidden" Command="{Binding  EditTable}" Grid.Column="5" Grid.Row="5" Background="DarkSeaGreen">
             <Button.Content>
                 <TextBlock FontSize="14" Text="Редактировать таблицу" TextWrapping="Wrap" TextAlignment="Center"/>
             </Button.Content>
         </Button>
-        
-        <Button x:Name="EditData" Command="{Binding  EditTableData}" Grid.Column="6" Grid.Row="5" Background="DarkSeaGreen">
+
+        <Button x:Name="EditData" Visibility="Hidden" Command="{Binding  EditTableData}" Grid.Column="6" Grid.Row="5" Background="DarkSeaGreen">
             <Button.Content>
                 <TextBlock FontSize="14" Text="Редактировать данные" TextWrapping="Wrap" TextAlignment="Center"/>
             </Button.Content>
