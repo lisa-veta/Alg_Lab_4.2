@@ -167,6 +167,8 @@ namespace HardLab5.ViewModels
             StartWork();
         });
 
+
+        
         private bool CheckChooses()
         {
             if (CurrentColumns.Contains(SelectedColumn)) return false;
