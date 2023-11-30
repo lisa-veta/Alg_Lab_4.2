@@ -194,7 +194,7 @@ namespace HardLab5
                 }
             }
             DataCurrentTable = dataTable;
-           ((MainWindow)System.Windows.Application.Current.MainWindow).DataGrid.Columns[0].Visibility = Visibility.Collapsed;
+           //((MainWindow)System.Windows.Application.Current.MainWindow).DataGrid.Columns[0].Visibility = Visibility.Collapsed;
         }
 
         private DataTable GreateDataTable(KeyValuePair<TableScheme, Table> keyTable, DataTable dataTable)
@@ -319,14 +319,8 @@ namespace HardLab5
                 vmSorted.DataTableС = new DataTable();
                 vmSorted.folderPath = folderPath;
                 List<string> names = new List<string>();
-                bool flag = true;
                 foreach (var column in DataCurrentTable.Columns)
                 {
-                    if (flag)
-                    {
-                        flag = false;
-                        continue;
-                    }
                     names.Add(column.ToString());
                 }
                 vmSorted.CurrentColumns = names;
